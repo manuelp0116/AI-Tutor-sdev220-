@@ -1,6 +1,6 @@
 AI Tutor
 
-Braden shrum 
+Braden Shrum 
 Charles Philips
-Chloe moore
-
+Chloe Moore
+Manuel P
