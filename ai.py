@@ -27,7 +27,7 @@ class ModelBase():
         '''
         if self.history: #check if there are messages in the history
             self.store(self.history[-1])
-    
+
         msg = {"role": "user", "content": self.prompt} # Parse the user prompt
 
         self.chat["messages"].append(msg) #append the dictionary to the inner list in chat
@@ -82,10 +82,10 @@ class TutorGPT(ModelBase):
 
     def addTopic(self, topic):
         '''
-        Sets the topic for modes learn and quiz. 
-        
+        Sets the topic for modes learn and quiz.
+
         For learn, the AI is asked if it can help the user learn about a topic.
-        
+
         For quiz, the AI is asked to create a practice quiz based on the topic.
 
         This function takes in one parameter:
