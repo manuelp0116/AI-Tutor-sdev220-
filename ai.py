@@ -1,7 +1,7 @@
 import openai
 # import whisper
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 class ModelBase():
     def __init__(self, prompt, systemPrompt):
@@ -24,6 +24,9 @@ class ModelBase():
         This function takes in two optional parameters:
             temperature: the randomness of the output - Set at 0.8 by default
             top_p: controls outputs via nucleus sampling. 0.5 means half of all likelyhood-weighed options are considered - set at 1 by default
+
+        Returns:
+            A generator object that contains all the chunks of AI output. This is necessary for streaming outputs.
         '''
         if self.history: #check if there are messages in the history
             self.store(self.history[-1])
@@ -33,14 +36,20 @@ class ModelBase():
         self.chat["messages"].append(msg) #append the dictionary to the inner list in chat
 
         # Get the AI response
-        completion = self.api.create(model="gpt-4", messages=self.chat["messages"], temperature=temperature, top_p=top_p)
+        completion = self.api.create(model="gpt-4", messages=self.chat["messages"], temperature=temperature, top_p=top_p, stream=True)
 
         # print(completion.choices[0].message)
-        self.history.append(completion.choices[0].message) #Add the AI's response to message history
         # print("\n", self.history)
-
         # print("\n", completion.choices[0].message.content)
-        return completion.choices[0].message.content
+        # return completion.choices[0].message.content
+
+        collectedMessages = []
+        for chunk in completion:
+            collectedMessages.append(chunk["choices"][0]["delta"])
+            if "content" in chunk["choices"][0]["delta"]:
+                yield chunk["choices"][0]["delta"]["content"]
+                
+        self.logCompletion(collectedMessages) #Add the AI's response to message history
 
     def clear(self):
         '''
@@ -70,15 +79,52 @@ class ModelBase():
         '''
         self.prompt = prompt
 
+    def logCompletion(self, messages):
+        '''
+        Builds a message dictionary from a list of messages. Message Dictionaries look like this:
+        >>> messageDict = {"role": "assistant", "content": "How can I help you?"}
+
+        The list input contains chunks of messages from the AI, with the first chunk being the role of the output.
+        This function takes in those chunks of outputs and recontructs a message dictionary to save in chat history.
+        '''
+        # Define the variables
+        collectedResponse = []
+        ResponseDict = {}
+        resultDict = {}
+
+        # Loop over the messages list and sort them into the resulting dictionary and a list
+        for message in messages:
+            if "role" in message: # If the "role" dictionary is found, place it in the result dictionary
+                resultDict.update(message)
+            else: # Every other dictionary (the "content" dictionaries) will be placed in a list
+                collectedResponse.append(message)   
+
+        ResponseDict.update(collectedResponse[0]) # Update the responseDict with the first dictionary in the collectedResponse list
+
+        # loop over the dictionaries in the collectedResponse list
+        for response in collectedResponse:
+            if "content" in response: # if there is a "content" key contained within the response dictionary
+                # Concatenate the strings from the two dictionaries into the responseDictionary
+                # This allows all the string chunks to be in one place
+                value = response["content"]
+                ResponseDict["content"] += value
+
+        resultDict.update(ResponseDict) # concatenate the response dictionary into the resulting dictionary to create the final product
+
+        self.history.append(resultDict) # save the resulting message dictionary to history
+
+        # print(self.history) # debug
+
 
 class TutorGPT(ModelBase):
-    def __init__(self, systemPrompt, mode, subject, gradeLevel):
+    def __init__(self, systemPrompt, subject, gradeLevel, mode="learn"):
         self.prompt = f"Hello, I am a student coming to you for help. I am in {gradeLevel} and I'm studying {subject} today"
         super().__init__(self.prompt, systemPrompt)
 
         self.mode = mode
         self.subject = subject
         self.gradeLevel = gradeLevel
+        self.quizConfiguration = ["yes", "no", "no"]
 
     def addTopic(self, topic):
         '''
@@ -95,7 +141,7 @@ class TutorGPT(ModelBase):
         if self.mode == "learn":
             self.prompt = f"Can you help me learn about {topic}?" # Change the prompt to fit the user's requirements
         elif self.mode == "quiz":
-            self.prompt = f"Can you create a practice quiz about {topic}?" # Change the prompt to fit the user's requirements
+            self.prompt = f"Can you create a practice quiz about {topic} with{self.quizConfiguration[0]} Multiple Choice questions, with{self.quizConfiguration[1]} Multiple Answer questions, and with{self.quizConfiguration[2]} Short Answer questions?" # Change the prompt to fit the user's requirements
         else:
             if self.mode == "expand":
                 print("Add topic reqiures a topic name, not a topic description. Use addExcerpt()")
@@ -126,3 +172,6 @@ class TutorGPT(ModelBase):
 
     def setGradeLevel(self, gradeLevel):
         self.gradeLevel = gradeLevel
+
+    def setQuizConfiguration(self, configuration):
+        self.quizConfiguration = configuration
