@@ -29,12 +29,16 @@ for i in range(len(resp_list)):
 
 # print/display quiz
 for j in range(len(quiz)):
-    print(
-        f"""
-        {quiz[f"q{j+1}"]["question"]}
-        A) {quiz[f"q{j+1}"]["choices"]["A"]}
-        B) {quiz[f"q{j+1}"]["choices"]["B"]}
-        C) {quiz[f"q{j+1}"]["choices"]["C"]}
-        D) {quiz[f"q{j+1}"]["choices"]["D"]}
-        """
-    )
+    print(f"""{quiz[f"q{j+1}"]["question"]}""")
+    for choice in quiz[f"q{j+1}"]["choices"]:
+        print(f"""A) {quiz[f"q{j+1}"]["choices"][choice]}""")
+
+    print("\n")
+
+
+    #     A) {quiz[f"q{j+1}"]["choices"]["A"]}
+    #     B) {quiz[f"q{j+1}"]["choices"]["B"]}
+    #     C) {quiz[f"q{j+1}"]["choices"]["C"]}
+    #     D) {quiz[f"q{j+1}"]["choices"]["D"]}
+    #     """
+    # )
