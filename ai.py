@@ -1,7 +1,7 @@
 import openai
 # import whisper
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 class ModelBase():
     def __init__(self, prompt, systemPrompt):
@@ -17,6 +17,8 @@ class ModelBase():
                 {"role": "assistant", "content": "Understood! How can I help you?"}
             ]
         }
+
+    #----------------------------- Main Method -----------------------------#
 
     def complete(self, temperature=0.8, top_p=1):
         '''
@@ -41,7 +43,6 @@ class ModelBase():
         # print(completion.choices[0].message)
         # print("\n", self.history)
         # print("\n", completion.choices[0].message.content)
-        # return completion.choices[0].message.content
 
         collectedMessages = []
         for chunk in completion:
@@ -51,33 +52,7 @@ class ModelBase():
                 
         self.logCompletion(collectedMessages) #Add the AI's response to message history
 
-    def clear(self):
-        '''
-        clears the chat history so the user can start from scratch conversing with the AI
-        '''
-        self.chat["messages"].clear() #Clear the list
-
-        self.chat = { #Re-add the system prompt (this should never be deleted)
-            "messages": [{"role": "system", "content": self.systemPrompt}]
-        }
-
-    def store(self, messageDict):
-        '''
-        Stores a message into chat history. Useful when injecting messages to add context.
-        '''
-        self.chat["messages"].append(messageDict)
-
-    def setSystem(self, systemPrompt):
-        '''
-        sets the system prompt
-        '''
-        self.systemPrompt = systemPrompt
-
-    def setPrompt(self, prompt):
-        '''
-        sets the user prompt
-        '''
-        self.prompt = prompt
+    #----------------------------- Chat History Management -----------------------------#
 
     def logCompletion(self, messages):
         '''
@@ -115,16 +90,65 @@ class ModelBase():
 
         # print(self.history) # debug
 
+    def store(self, messageDict):
+        '''
+        Stores a message into chat history. Useful when injecting messages to add context.
+        '''
+        self.chat["messages"].append(messageDict)
+
+    def clear(self):
+        '''
+        clears the chat history so the user can start from scratch conversing with the AI
+        '''
+        self.chat["messages"].clear() #Clear the list
+
+        self.chat = { #Re-add the system prompt (this should never be deleted)
+            "messages": [{"role": "system", "content": self.systemPrompt}]
+        }
+
+    def delete(self, index):
+        '''
+        Deletes a specific message from message history by finding it's index
+        '''
+        MAX_INDEX = len(self.chat["messages"])
+
+        if index > MAX_INDEX:
+            print(f"The chat history is not more than {MAX_INDEX} messages long!")
+        elif index < 0:
+            print(f"There cannot be negative messages! Use a positive number.")
+        else:
+            for i, dicts in enumerate(self.chat["messages"]):
+                if i == index:
+                    self.chat["messages"].remove(dicts)
+
+    #----------------------------- Prompt Modifiers -----------------------------#
+
+    def setSystem(self, systemPrompt):
+        '''
+        sets the system prompt
+        '''
+        self.systemPrompt = systemPrompt
+
+    def setPrompt(self, prompt):
+        '''
+        sets the user prompt
+        '''
+        self.prompt = prompt
+
 
 class TutorGPT(ModelBase):
-    def __init__(self, systemPrompt, subject, gradeLevel, mode="learn"):
-        self.prompt = f"Hello, I am a student coming to you for help. I am in {gradeLevel} and I'm studying {subject} today"
-        super().__init__(self.prompt, systemPrompt)
+    def __init__(self, subject, gradeLevel, mode="learn"):
+        prompt = f"Hello, I am a student coming to you for help. I am in {gradeLevel} and I'm studying {subject} today"
+        systemPrompt = f"You are a professional {gradeLevel} instructor who specializes in teaching in the {subject} area of study"
 
         self.mode = mode
         self.subject = subject
         self.gradeLevel = gradeLevel
-        self.quizConfiguration = ["yes", "no", "no"]
+        self.quizConfiguration = ["", "out", "out"]
+
+        super().__init__(prompt, systemPrompt)
+
+    #----------------------------- TutorGPT Setup -----------------------------#
 
     def addTopic(self, topic):
         '''
@@ -163,6 +187,8 @@ class TutorGPT(ModelBase):
             print("Excerpt mode is for excerpts taken from textbooks or other source material that the student needs help understanding, not for learning about a topic. Use addTopic()")
         elif self.mode == "quiz":
             print("creating a quiz based on an excerpt of text taken from a textbook is not helpful to the student, use addTopic()")
+
+    #----------------------------- Attribute Modifiers -----------------------------#
 
     def setMode(self, mode):
         self.mode = mode
