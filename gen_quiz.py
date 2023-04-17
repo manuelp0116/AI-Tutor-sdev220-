@@ -16,9 +16,9 @@ class Question:
 
 
 def create_quiz(response: list):
-    """Takes Ai response and returns a list of dictionaries, with each dictionary being a question of the quiz"""
+    """Takes Ai response and returns quiz as a dictionary of dictionaries, with each nested dictionary being a question of the quiz"""
 
-    # parse AI response
+    # parse AI response and get JSON code block
     resp_string = response[0]
     resp_split = resp_string.split("```")
     resp_list = json.loads(resp_split[1].strip())
@@ -26,14 +26,14 @@ def create_quiz(response: list):
     # initiate quiz dicitonary object
     quiz = {}
 
-    # enter info from parsed json list into the quiz dictionary
+    # enter info from parsed JSON list into the quiz dictionary
     for i in range(len(resp_list)):
         quiz[f"question{i}"] = Question(
             text=resp_list[i]["question"],
             choices=resp_list[i]["choices"],
             answer=resp_list[i]["answer"],
             student_answer="",
-            )
+        )
 
     return quiz
 
@@ -49,9 +49,10 @@ response_from_AI = [
 quiz = create_quiz(response_from_AI)
 
 
-# print quiz to check input
+# print quiz to check input values
 for question in quiz.values():
     print(question.text)
     for letter, choice in question.choices.items():
         print(f"{letter}) {choice}")
     print("\n")
+
