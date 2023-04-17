@@ -49,10 +49,9 @@ response_from_AI = [
 quiz = create_quiz(response_from_AI)
 
 
-# print quiz to check input values
-for question in quiz.values():
-    print(question.text)
-    for letter, choice in question.choices.items():
-        print(f"{letter}) {choice}")
-    print("\n")
-
+# # print quiz to check input values
+# for question in quiz.values():
+#     print(question.text)
+#     for letter, choice in question.choices.items():
+#         print(f"{letter}) {choice}")
+#     print("\n")
