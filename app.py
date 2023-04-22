@@ -121,8 +121,6 @@ def discuss(model: TutorGPT):
 # Basic functions go here
 
 def main():
-    systemPrompt = "You are an instructor that specializes in all subjects. You can teach and coach about anything, as you have unlimited knowlege."
-
     print("Welcome to TutorGPT, your AI learning application! We just need to ask you a couple of questions before you get started.\n")
     time.sleep(1)
 
@@ -130,24 +128,12 @@ def main():
     gradeLevel = input("What grade are you currently in (EX: high school, college) > ")
     time.sleep(1)
 
-    tutor = TutorGPT(systemPrompt, subject, gradeLevel)
+    tutor = TutorGPT(subject, gradeLevel)
 
     discuss(tutor)
 
 def testMain():
-    systemPrompt = "You are an instructor that specializes in all subjects. You can teach and coach about anything, as you have unlimited knowlege."
-
-    subject = input("What subject are you coming to TutorAI for help with > ")
-    gradeLevel = input("What grade are you currently in (EX: high school, college) > ")
-
-    tutor = TutorGPT(systemPrompt, subject, gradeLevel)
-
-    tutor.addTopic("simple math")
-
-    completion = tutor.complete()
-
-    for chunk in completion:
-        print(chunk, end='', flush=True)
+    pass
 
 if __name__ == "__main__":
     # testMain()
