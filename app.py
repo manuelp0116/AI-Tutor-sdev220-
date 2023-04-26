@@ -14,7 +14,22 @@ from ai import TutorGPT # The AI class
 #------------------------------------------------------------
 # OpenAI API functions go here
 
-def discuss(model: TutorGPT):
+
+
+#------------------------------------------------------------
+# Whisper speech transcription functions go here
+
+
+
+#------------------------------------------------------------
+# Tkinter Functions go here
+
+
+
+#------------------------------------------------------------
+# Basic functions go here
+
+def testAI(model: TutorGPT):
     '''
     This is a function that serves as a proof-of-concept for the AI tutor. It provides an interface for the AI to discuss about a topic with the user.
 
@@ -107,34 +122,13 @@ def discuss(model: TutorGPT):
         Study Mode > """)
         mode = mode.lower()
 
-#------------------------------------------------------------
-# Whisper speech transcription functions go here
-
-
-
-#------------------------------------------------------------
-# Tkinter Functions go here
-
-
-
-#------------------------------------------------------------
-# Basic functions go here
-
 def main():
-    print("Welcome to TutorGPT, your AI learning application! We just need to ask you a couple of questions before you get started.\n")
-    time.sleep(1)
-
-    subject = input("What subject are you coming to TutorAI for help with > ")
-    gradeLevel = input("What grade are you currently in (EX: high school, college) > ")
-    time.sleep(1)
-
-    tutor = TutorGPT(subject, gradeLevel)
-
-    discuss(tutor)
+    pass
 
 def testMain():
     pass
 
 if __name__ == "__main__":
     # testMain()
+    # testAI()
     main()

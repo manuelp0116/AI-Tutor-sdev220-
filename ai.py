@@ -12,14 +12,15 @@ def retryConnection(max_retries):
         def wrapper(*args, **kwargs):
             for i in range(max_retries):
                 try:
-                    result = function(*args, **kwargs)
+                    result = function(*args, **kwargs) # complete() function
 
                     for chunk in result:
                         yield chunk
 
                     break
                 except APIConnectionError:
-                    print(f"Connection Failed, retrying... ({i}/{max_retries})\n")
+                    if i % 2 == 0:
+                        print(f"Connection Failed, retrying... ({i}/{max_retries})\n")
                     
                     if i == max_retries:
                         print("Insure you are connected to the internet and try again\n")
@@ -27,12 +28,12 @@ def retryConnection(max_retries):
         return wrapper
     return decorator
 
-class ModelBase():
+class ModelBase:
     def __init__(self, prompt, systemPrompt):
-        self.prompt = prompt
-        self.systemPrompt = systemPrompt
+        self.prompt = prompt # What we're asking the AI to do (ex: "give me a quiz on the French Revolution")
+        self.systemPrompt = systemPrompt # What the AI is (EX: you are an instructor)
 
-        self.history = []
+        self.history = [] # This is the stored chat history.
         self.api = openai.ChatCompletion()
 
         self.chat = { #initialize the chat with a system prompt
@@ -45,7 +46,7 @@ class ModelBase():
 
     #----------------------------- Main Method -----------------------------#
 
-    @retryConnection(max_retries=3)
+    @retryConnection(max_retries=100)
     def complete(self, temperature=0.8, top_p=1):
         '''
         Get's a response from the AI according to the question layed out in the prompt
@@ -233,7 +234,6 @@ class ModelBase():
         sets the user prompt
         '''
         self.prompt = prompt
-
 
 class TutorGPT(ModelBase):
     def __init__(self, subject, gradeLevel, mode="learn"):
