@@ -1,10 +1,3 @@
-"""
-Function to create quiz.
-
-Best prompt to get consistently structured response:
-{AI RULES TEXT HERE} In JSON format, with keys for question, choices, answer: create a multiple choice quiz for a {gradeLevel} student about {subject}. In particular, focus on {user input here}. Make the quiz 10 questions long with 4 choices each. Make the choices key in a single dictionary format with the keys capitalized and the JSON object a list of dictionaries.
-"""
-
 import json
 from dataclasses import dataclass
 
@@ -18,9 +11,9 @@ class Question:
     student_answer: str
 
 
-def create_quiz(response: list):
+def create_quiz(response: str):
     """
-    Takes Ai response and returns quiz as a dictionary of dictionaries, with each subsequent dictionary being a question of the quiz (as a class)
+    Takes Ai response as a string and returns quiz as a dictionary of dictionaries, with each subsequent dictionary being a question of the quiz (as a class)
 
     Returned quiz dictionary is in following format:
         {quizname: {
@@ -43,28 +36,26 @@ def create_quiz(response: list):
         question#.student_answer = "Letter of student answer" (eg. "C") ### Default value is a blank string
     """
 
-    # parse AI response and get JSON code block
-    resp_string = response[0]
-    resp_split = resp_string.split("```")
-
-    # check for JSON code block in AI response and exits function if not
-    if len(resp_split) != 3:
+    # checks if a JSON code block exists in the response, exits function if not
+    try:
+        split_respose = response.strip().split("```")
+    except ValueError:
         print(
             "Uh oh! Something went wrong and we couldn't generate your quiz. Please try again."
         )
-        exit()
+        return None
 
-    resp_list = json.loads(resp_split[1].strip())
+    json_list = json.loads(split_respose[1].strip())
 
     # initiate quiz dicitonary object
     quiz = {}
 
     # enter info from parsed JSON list into the quiz dictionary
-    for i in range(len(resp_list)):
+    for i in range(len(json_list)):
         quiz[f"question{i+1}"] = Question(
-            text=resp_list[i]["question"],
-            choices=resp_list[i]["choices"],
-            answer=resp_list[i]["answer"],
+            text=json_list[i]["question"],
+            choices=json_list[i]["choices"],
+            answer=json_list[i]["answer"],
             student_answer="",
         )
 
