@@ -9,6 +9,7 @@ class Question:
     choices: dict
     answer: str
     student_answer: str
+    quiz_type: str
 
 
 def create_quiz(response: str):
@@ -39,13 +40,13 @@ def create_quiz(response: str):
     # checks if a JSON code block exists in the response, exits function if not
     try:
         split_respose = response.strip().split("```")
-    except ValueError:
+        json_list = json.loads(split_respose[1].strip())
+
+    except:
         print(
             "Uh oh! Something went wrong and we couldn't generate your quiz. Please try again."
         )
-        return None
-
-    json_list = json.loads(split_respose[1].strip())
+        exit()
 
     # initiate quiz dicitonary object
     quiz = {}
@@ -57,6 +58,7 @@ def create_quiz(response: str):
             choices=json_list[i]["choices"],
             answer=json_list[i]["answer"],
             student_answer="",
+            quiz_type="Multiple Choice",
         )
 
     return quiz
@@ -66,20 +68,18 @@ def create_quiz(response: str):
 
 # for testing, I just copied and pasted a response I got
 
-# # good string
-# response_from_AI = [
-#     'Here is an example JSON object that contains a multiple choice quiz about horses:\n\n```\n[\n  {\n    "question": "What is the gestation period of a horse?",\n    "choices": {\n      "A": "4 months",\n      "B": "6 months",\n      "C": "9 months",\n      "D": "12 months"\n    },\n    "answer": "C"\n  },\n  {\n    "question": "Which of the following is not a horse breed?",\n    "choices": {\n      "A": "Thoroughbred",\n      "B": "Quarter Horse",\n      "C": "Arabian",\n      "D": "Bengal"\n    },\n    "answer": "D"\n  },\n  {\n    "question": "What is the name of the fastest horse on record?",\n    "choices": {\n      "A": "Secretariat",\n      "B": "Man o\' War",\n      "C": "Winning Colors",\n      "D": "Black Caviar"\n    },\n    "answer": "A"\n  }\n]\n```\n\nIn this example, there are three questions about horses, each with four possible choices. The correct answer for each question is indicated by the value of the "answer" key, which corresponds to the key of the correct choice in the "choices" dictionary.\n\nFeel free to modify the questions, choices, and answers to suit the needs of your intermediate students.'
-# ]
+# good string
+# response_from_AI = 'Here is an example JSON object that contains a multiple choice quiz about horses:\n\n```\n[\n  {\n    "question": "What is the gestation period of a horse?",\n    "choices": {\n      "A": "4 months",\n      "B": "6 months",\n      "C": "9 months",\n      "D": "12 months"\n    },\n    "answer": "C"\n  },\n  {\n    "question": "Which of the following is not a horse breed?",\n    "choices": {\n      "A": "Thoroughbred",\n      "B": "Quarter Horse",\n      "C": "Arabian",\n      "D": "Bengal"\n    },\n    "answer": "D"\n  },\n  {\n    "question": "What is the name of the fastest horse on record?",\n    "choices": {\n      "A": "Secretariat",\n      "B": "Man o\' War",\n      "C": "Winning Colors",\n      "D": "Black Caviar"\n    },\n    "answer": "A"\n  }\n]\n```\n\nIn this example, there are three questions about horses, each with four possible choices. The correct answer for each question is indicated by the value of the "answer" key, which corresponds to the key of the correct choice in the "choices" dictionary.\n\nFeel free to modify the questions, choices, and answers to suit the needs of your intermediate students.'
 
-# # bad string
-# response_from_AI = ["string of text"]
+# bad string
+response_from_AI = "string of text"
 
-# quiz = create_quiz(response_from_AI)
+quiz = create_quiz(response_from_AI)
 
 
-# # print quiz to check input values
-# for question in quiz.values():
-#     print(question.text)
-#     for letter, choice in question.choices.items():
-#         print(f"{letter}) {choice}")
-#     print("\n")
+# print quiz to check input values
+for question in quiz.values():
+    print(question.text)
+    for letter, choice in question.choices.items():
+        print(f"{letter}) {choice}")
+    print("\n")
