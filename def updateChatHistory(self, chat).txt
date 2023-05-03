@@ -1,0 +1,3 @@
+    def updateChatHistory(self, chat):
+        for chat in enumerate self.chatHistory:
+            self.chatHistoryFrame(command=self.switchFrames(chat))
