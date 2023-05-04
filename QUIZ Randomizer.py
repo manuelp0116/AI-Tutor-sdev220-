@@ -44,7 +44,7 @@ class createRadioButtons(ctk.CTkFrame):
             self.radiobuttons.append(radiobutton)
 
     def get(self):
-        return self.variable.get()
+        return self.variable.get() 
     
 class QuizGUI(ctk.CTk):
     def __init__(self, quiz_data):
@@ -163,47 +163,51 @@ class QuizGUI(ctk.CTk):
         self.progress_bar.set(self.progress)
         self.nextQuestion()
 
-# Create and run the quiz GUI
-quiz_data = [
-  {
-    "type": "Multiple Answer",
-    "question": "Which of the following are types of coral reefs? (Select all that apply)",
-    "answer": ["Fringing", "Barrier", "Atoll"],
-    "options": [
-      "Fringing",
-      "Barrier",
-      "Atoll",
-      "Patch"
-    ]
-  },
-  {
-    "type": "Multiple Choice",
-    "question": "What is the most common type of shark?",
-    "answer": "Blue shark",
-    "options": [
-      "Great white shark",
-      "Tiger shark",
-      "Hammerhead shark",
-      "Blue shark"
-    ]
-  },
-  {
-    "type": "Multiple Choice",
-    "question": "What percentage of the Earth's surface is covered by oceans?",
-    "answer": "71%",
-    "options": [
-      "45%",
-      "60%",
-      "71%",
-      "85%"
-    ]
-  },
-  {
-    "type": "Fill in the Blank",
-    "question": "The deepest part of the ocean is called the _________.",
-    "answer": "Challenger Deep"
-  }
-]
+if __name__ == "__main__":
+    # Create and run the quiz GUI
+    
+    # Quiz data = 
 
-quiz_gui = QuizGUI(quiz_data)
-quiz_gui.mainloop()
+    quiz_data = [
+    {
+        "type": "Multiple Answer",
+        "question": "Which of the following are types of coral reefs? (Select all that apply)",
+        "answer": ["Fringing", "Barrier", "Atoll"],
+        "options": [
+        "Fringing",
+        "Barrier",
+        "Atoll",
+        "Patch"
+        ]
+    },
+    {
+        "type": "Multiple Choice",
+        "question": "What is the most common type of shark?",
+        "answer": "Blue shark",
+        "options": [
+        "Great white shark",
+        "Tiger shark",
+        "Hammerhead shark",
+        "Blue shark"
+        ]
+    },
+    {
+        "type": "Multiple Choice",
+        "question": "What percentage of the Earth's surface is covered by oceans?",
+        "answer": "71%",
+        "options": [
+        "45%",
+        "60%",
+        "71%",
+        "85%"
+        ]
+    },
+    {
+        "type": "Fill in the Blank",
+        "question": "The deepest part of the ocean is called the _________.",
+        "answer": "Challenger Deep"
+    }
+    ]
+
+    quiz_gui = QuizGUI(quiz_data)
+    quiz_gui.mainloop()

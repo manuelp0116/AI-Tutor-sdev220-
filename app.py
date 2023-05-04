@@ -129,6 +129,11 @@ def testMain():
     pass
 
 if __name__ == "__main__":
+    subject = input("Enter the subject you are currently coming to TutorGPT with > ")
+    gradeLevel = input("Enter your current grade level > ")
+
+    model = TutorGPT(subject, gradeLevel)
+
     # testMain()
-    # testAI()
-    main()
+    testAI(model)
+    # main()

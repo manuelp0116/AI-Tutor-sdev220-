@@ -138,6 +138,22 @@ class UI:
         #####################################################################################################
         "<><><><><><><><><><><><><><><><><><>   Create Chat Frame   <><><><><><><><><><><><><><><><><><><><>"
         #####################################################################################################
+class scrollableFrame(ctk.CTkScrollableFrame):
+    def __init__(self, messages):
+        super().__init__()
+        self.grid_columnconfigure(0, weight=1)
+        self.messages = messages
+        self.msgboxes = []
+
+    def createMsgBox(self, messages):
+        for value in enumerate(self.messages):
+            msgbox = ctk.CTkTextbox(self, text=value)
+            msgbox.grid(row=len(self.msgboxes), column=1, padx=20, pady=20, sticky="nsew")
+            self.msgboxes.append(msgbox)
+            scrollableFrame()
+
+        
+        
         self.chat_frame = ctk.CTkFrame(window, width=400, height=500, corner_radius=0, fg_color="grey20")
         self.chat_frame.grid_rowconfigure(0, weight=1)
         self.chat_frame.grid_columnconfigure(1, weight=1)
@@ -155,7 +171,7 @@ class UI:
 
         # Create question input field
         self.chat_InputField = ctk.CTkEntry(self.chat_frame, placeholder_text="What can I help you with?", fg_color="transparent")
-        self.askAI_btn = ctk.CTkButton(self.chat_frame, text="Ask AI", command=lambda: self.create_request())
+        self.askAI_btn = ctk.CTkButton(self.chat_frame, text="Ask AI", command=lambda: self.create_request(self.chat_InputField.get()))
 
         # Create speech recognition button
         self.speak_button = ctk.CTkButton(self.chat_frame, text="Speak", command=self.send_SR_input)
@@ -182,22 +198,26 @@ class UI:
         # mode: 'learn' 
 
     # This function creates a new msgbox and adds the AI's output to the main Chat history screen
-    def create_msgbox(self, mode): 
+    def create_msgbox(self): 
+        self.currentMsgBox = self.ai_chatOutput[self.currentMsgBox_index]
         self.ai_chatOutput = ctk.CTkTextbox(self.chat_responseFrame)
-        self.ai_chatOutput.grid(row=len(self.ai_msgbox_list), column=1,)
+        self.ai_chatOutput.grid(row=len(self.ai_msgbox_list), column=1, row=0)
+        self.ai_chatOutput[currentMsgBox_index]
         self.student_chatInput = ctk.CTkTextbox(self.chat_responseFrame)
         self.student_chatInput.grid(row=len(self.student_msgbox_list), column=3)
         self.ai_msgbox_chatList.append(self.ai_chatOutput)
-        self.student_msgbox_list[mode].append(self.student_chatInput)
+        self.student_msgbox_list.append(self.student_chatInput)
         # Makes responses read-only
         self.student_chatInput.configure(state='normal')
         self.ai_chatOutput.configure(state='disabled')
+        self.currentMsgBox_index += 1
         return
-
 
     def addChat(self, response):
         # Add each character of the message one-by-one with a delay
         self.create_msgbox()
+        for msg in msgs:
+            
         for chunk in response:
             if chunk.endswith("."):
                 self.ai_chatOutput.insert('end', ".\n")
@@ -207,13 +227,24 @@ class UI:
                 self.ai_chatOutput.insert('end', chunk)
                 self.ai_chatOutput.update()
                 time.sleep(0.03)
-            self.ai_responses.append(chunk)        
+            self.ai_responses.append(chunk)
+
+    def update_textbox_height(self):
+        # get the required height of the textbox
+        self.req_height +=10
+        # set the height of the textbox
+        self.currentMsgBox.configure(height=self.req_height)
+        #model.chat_history.append(self.response) # Add each new chat to the aray of this request[i++]        
      
     def buttonEvent(self, name):
         self.chat_btn.configure(fg_color=("gray75", "gray75") if name == "Home" else "transparent")
         self.quiz_btn.configure(fg_color=("gray75", "gray75") if name == "Chat" else "transparent")
         self.student_btn.configure(fg_color=("gray75", "gray75") if name == "Student" else "transparent")
         return
+
+    # response = model.complete()
+
+    '--- Pre-Reqs for create_request are subjectLvl, gradeLvl, mode
     
     # Get the response from the OpenAI API and display it in the AI response in the respective window
     def create_request(self, question):
