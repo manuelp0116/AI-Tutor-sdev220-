@@ -127,7 +127,7 @@ class Quiz:
     def create_widgets(self):
         self.mapQuizData()
         if self.quiz_type == 'Fill in the Blank':
-            UI.question_label.configure(self, text=Quiz.current_question, fg_color="gray30", corner_radius=6)
+            UI.question_label.configure(UI.quizContainer, text=Quiz.current_question, fg_color="gray30", corner_radius=6)
             UI.question_label.grid(row=1, column=0, sticky="ew")
             self.answer_entry = ctk.CTkEntry(self)
             self.answer_entry.grid(row=4, column=0, sticky="ew", padx=30)

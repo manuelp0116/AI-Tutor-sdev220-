@@ -6,6 +6,7 @@ APP DESCRIPTION HERE
 import random
 import math
 import time
+from gui_BEST import Quiz
 
 # User Created Classes
 from ai import TutorGPT # The AI class
@@ -101,6 +102,8 @@ def testAI(model: TutorGPT):
             continue # skip over the rest of the code and restart the loop
 
         response = model.complete() # get the response stream
+
+        Quiz.setQuizData(response)
 
         print('\n\n')
 
