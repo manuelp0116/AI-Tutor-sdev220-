@@ -24,7 +24,7 @@ def retryConnection(max_retries):
                     
                     if i == max_retries:
                         print("Insure you are connected to the internet and try again\n")
-                        return None
+                        return True # Return True to communicate the error with the GUI
         return wrapper
     return decorator
 

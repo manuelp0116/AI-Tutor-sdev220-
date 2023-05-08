@@ -3,6 +3,7 @@ from tkinter import messagebox # This is used to show a messagebox
 import json, os, time
 from PIL import Image # Import python image library for the button images
 from ai import TutorGPT # The AI class
+from dataclasses import dataclass
 
 model = TutorGPT('history', 'college', 'learn')
 
@@ -14,11 +15,12 @@ title = ('AI Tutor')
 # User and Assistant.
 class scrollableFrame(ctk.CTkScrollableFrame):
     def __init__(self, senders):
-        super().__init__()
         self.grid_columnconfigure(0, weight=1)
         self.senders = senders
         self.msgboxes = []
         self.row = 0
+        self.req_height = 0
+        
 
     def addChat(self, message, senders):
         for sender in senders:
@@ -27,17 +29,19 @@ class scrollableFrame(ctk.CTkScrollableFrame):
             msgbox.config(state='disabled')
             self.msgboxes.append(msgbox)
             if sender == 'User':
-                msgbox.insert("end", f"{Student.name}:{message}")
+                msgbox.insert("end", f"{Student.name}: {message}")
             elif sender == 'Assistant':
                 response = model.complete()
-                for chunk in response():
+                for chunk in response:
                     if chunk.endswith("."):
                         msgbox.insert('end', ".\n")
-                        UI.update_textbox_height(20)
+                         # set the height of the textbox
+                        self.req_height +=10
+                        msgbox.configure(height=self.req_height)
                         msgbox.update()
                         time.sleep(0.03)
                     else:
-                        msgbox.configure(chunk)
+                        msgbox.insert('end', chunk)
                         msgbox.update()
                         time.sleep(0.03)
     
@@ -89,160 +93,19 @@ class controlPanel(ctk.CTkFrame):
 
     def getRadioButtons(self):
         return self.variable.get()
-    
+
+@dataclass   
 class Student:
-    def __init__(self):
-        super().__init__()
-        self.answer = ''
-        self.chatInput = ''
-        self.answers_correct = 0
-        self.name = ''
-        self.score = 0
+    answer = ''
+    chatInput = ''
+    answers_correct = 0
+    name = ''
+    score = 0
 
 # Quiz class. This class handles the quiz related variables.
-    
-class Quiz:
-    def __init__(self, quiz_data):
-        super().__init__()
-        self.quiz_data = quiz_data
-        self.quiz_length = len(self.quiz_data)
-        self.quiz_type = ''
-        self.current_question = ''
-        self.correct_answer = ''
-        self.options = ''
-        self.question_index = 0
-        Student.answers_correct = 0
-        self.progress = 0
-        self.max_score = 100
-        self.display_question()
-
-    def mapQuizData(self):
-        self.current_question_data = self.quiz_data[self.question_index]
-        vars = ['quiz_type', 'current_question', 'correct_answer']
-        params = ['type', 'question', 'answer']
-        for var, param in zip(vars, params):
-            value = self.current_question_data[param]
-            setattr(self, var, value)
-
-    def create_widgets(self):
-        self.mapQuizData()
-        if self.quiz_type == 'Fill in the Blank':
-            UI.question_label.configure(UI.quizContainer, text=Quiz.current_question, fg_color="gray30", corner_radius=6)
-            UI.question_label.grid(row=1, column=0, sticky="ew")
-            self.answer_entry = ctk.CTkEntry(self)
-            self.answer_entry.grid(row=4, column=0, sticky="ew", padx=30)
-        elif self.quiz_type == 'Multiple Choice':
-            self.quiz_options = self.quiz_data[self.question_index]['options']
-            self.multipleChoiceFrame = controlPanel(UI.quizContainer)
-            self.multipleChoiceFrame.createRadioButtons(self.current_question, values=self.quiz_options)
-            self.multipleChoiceFrame.grid(row=0, column=3, padx=40, pady=10, sticky="nsew")
-        elif self.quiz_type == 'Multiple Answer':
-            self.quiz_options = self.quiz_data[self.question_index]['options']
-            self.multipleAnswerFrame = controlPanel(UI.quizContainer)
-            self.multipleAnswerFrame.createCheckboxes(self.current_question, values=self.quiz_options)
-            self.multipleAnswerFrame.grid(row=0, column=3, padx=40, pady=40, sticky="nsew")
-
-    def display_question(self):
-        self.create_widgets()
-
-    def ignoreCaseSensitive(self, state):
-        if state is True:
-            Student.answer = Student.answer.lower()
-            self.correct_answer = self.correct_answer.lower()
-        else:
-            return False
-
-    def getStudentAnswers(self):
-        # Get current question data
-        if self.quiz_type == 'Fill in the Blank':
-            # Get selected answers
-            Student.answer = self.answer_entry.get()
-            self.ignoreCaseSensitive(True)
-            print(Student.answer, self.correct_answer)
-        if self.quiz_type == 'Multiple Answer':
-        # Get a set of selected answers
-            Student.answer = self.multipleAnswerFrame.getCheckboxes()
-        if self.quiz_type == 'Multiple Choice':
-            # Get multiple choice answer as a set of selected answers
-            Student.answer = self.multipleChoiceFrame.getRadioButtons()
-
-    def submitAnswer(self):
-        print('AI Response Here')
-        # Send student response to AI
-        model.complete()
-        self.checkAnswer()
-
-    def checkAnswer(self):
-        self.getStudentAnswers()
-            # Check if selected answers match correct answers
-        if set(Student.answer) == set(self.correct_answer):
-            Student.answers_correct += 1
-            messagebox.showinfo("Result", "Correct!")
-        else:
-            messagebox.showinfo("Result", "Incorrect!")
-        self.update_score()
-
-    def nextQuestion(self):
-        print('Go here?')
-        self.question_index += 1
-        if self.question_index == self.quiz_length:
-            messagebox.showinfo("Score", f"You scored {Student.score}% out of {self.max_score}%")
-            UI.switchFrame('quizResultsFrame')
-            return
-        self.display_question()
-
-    def update_score(self):
-        Student.score = ((Student.answers_correct / self.quiz_length) * 100)
-        UI.score_lbl.configure(text=f'Score: {Student.score}')
-        self.progress += (1 / self.quiz_length)
-        UI.progress_bar.set(self.progress)
-        self.nextQuestion()
-
-# Create and run the quiz GUI
-quiz_data = [
-  {
-    "type": "Multiple Answer",
-    "question": "Which of the following are types of coral reefs? (Select all that apply)",
-    "answer": ["Fringing", "Barrier", "Atoll"],
-    "options": [
-      "Fringing",
-      "Barrier",
-      "Atoll",
-      "Patch"
-    ]
-  },
-  {
-    "type": "Multiple Choice",
-    "question": "What is the most common type of shark?",
-    "answer": "Blue shark",
-    "options": [
-      "Great white shark",
-      "Tiger shark",
-      "Hammerhead shark",
-      "Blue shark"
-    ]
-  },
-  {
-    "type": "Multiple Choice",
-    "question": "What percentage of the Earth's surface is covered by oceans?",
-    "answer": "71%",
-    "options": [
-      "45%",
-      "60%",
-      "71%",
-      "85%"
-    ]
-  },
-  {
-    "type": "Fill in the Blank",
-    "question": "The deepest part of the ocean is called the _________.",
-    "answer": "Challenger Deep"
-  }
-]
 
 class UI:
     def __init__(self, window):
-        super().__init__()
         # set grid layout 1x2
         window.grid_rowconfigure(0, weight=1)
         window.grid_columnconfigure(1, weight=1)
@@ -325,14 +188,17 @@ class UI:
         self.chat_input.grid(row=1, column=1, padx=5, pady=10, sticky='nsew')
         self.askAI_btn = ctk.CTkButton(self.chatFrame, text="Ask AI", command=lambda: self.create_request(self.chat_input.get()))
         self.askAI_btn.grid(row=1, column=2, padx=5, pady=10, sticky='nsew')
-        
-        while model.connectionError == True:      
-            self.connectionStatus=('Status: Connection error!, Retrying...')
-            self.askAI_btn.configure(state='disabled')
+
+
+        if isinstance(result, bool):
+            while result == True:
+                self.connectionStatus=('Status: Connection error!, Retrying...')
+                self.askAI_btn.configure(state='disabled')
+                self.createQuiz_btn.configure(state='disabled')
+        else:
+            self.connectionStatus=('Status: Connected')
+            self.askAI_btn.configure(state='normal')
             self.createQuiz_btn.configure(state='disabled')
-        self.connectionStatus=('Status: Connected')
-        self.askAI_btn.configure(state='normal')
-        self.createQuiz_btn.configure(state='disabled')
 
         #####################################################################################################
         "<><><><><><><><><><><><><><><><><><>   Create Student Frame   <><><><><><><><><><><><><><><><><><>"
@@ -370,7 +236,7 @@ class UI:
         self.quizCreationFrame.grid(row=0, column=1, columnspan=4, sticky="nsew", padx=20, pady=10)
         self.quiz_subjectDropdown = ctk.CTkOptionMenu(self.quizCreationFrame, values=["Math", "History", "Geography", "Health", "Science"])
         self.quiz_subjectDropdown.grid(row=7, column=1, padx=20, pady=10)
-        self.quiz_lvlDropdown = ctk.CTkOptionMenu(self.navbarFrame, values=["Elementary", "Middle", "High", "College"])
+        self.quiz_lvlDropdown = ctk.CTkOptionMenu(self.quizCreationFrame, values=["Elementary", "Middle", "High", "College"])
         self.quiz_lvlDropdown.grid(row=4, column=2, padx=20, pady=10)
         
         self.quiz_input = ctk.CTkEntry(self.quizFrame, placeholder_text=f"{self.placeholder}", fg_color="transparent")
@@ -397,7 +263,7 @@ class UI:
 
     def checkFields(self):
         if self.currentTab == 'Chat':
-            while self.current_InputField.get() != '':
+            while self.chat_input.get() != '':
                 self.askAI_btn.configure(state='normal')
             self.askAI_btn.configure(state='disabled')
         elif self.currentTab == 'Quiz':
@@ -424,10 +290,13 @@ class UI:
             # Create a scrollable frame to contain each the conversation between the user and the AI
                 self.chatHistoryFrame = scrollableFrame(self.chatFrame)
                 # Display the student's message and the AI's in the conversation
+                Student.chatInput = self.currentInputField.get()
                 self.chatHistoryFrame.addChat(message=Student.chatInput, senders=['User', 'Assistant'])
                 self.chatWindows.append(self.chatHistoryFrame)
         else:
             return
+
+# configure the textbox to update its height when the text changes
 
     def start_app(self):
         self.studentFrame.grid_forget()  # remove startupScreen frame
@@ -467,9 +336,6 @@ class UI:
     def setMode(self, mode):
         model.setMode(mode)
 
-    def setMode(self, mode):
-        model.setMode(mode)
-
     def setExcerpt(self, excerpt):
         model.addExcerpt(excerpt)
 
@@ -484,6 +350,126 @@ class UI:
 
     def change_appearance_mode_event(self, new_appearance_mode):
         ctk.set_appearance_mode(new_appearance_mode)
+    
+class Quiz(UI):
+    def __init__(self, window, quiz_data):
+        super().__init__(window)
+        self.quiz_data = quiz_data
+        self.quiz_length = len(self.quiz_data)
+        self.quiz_type = ''
+        self.current_question = ''
+        self.correct_answer = ''
+        self.options = ''
+        self.question_index = 0
+        self.progress = 0
+        self.max_score = 100
+
+        self.display_question()
+
+    def mapQuizData(self):
+        self.current_question_data = self.quiz_data[self.question_index]
+        vars = ['quiz_type', 'current_question', 'correct_answer']
+        params = ['type', 'question', 'answer']
+        for var, param in zip(vars, params):
+            value = self.current_question_data[param]
+            setattr(self, var, value)
+
+    def display_question(self):
+        self.create_widgets()
+    
+    def create_widgets(self):
+        self.mapQuizData()
+        if self.quiz_type == 'Multiple Choice':
+            self.quiz_options = self.quiz_data[self.question_index]['options']
+            self.multipleChoiceFrame = controlPanel(self.quizContainer)
+            self.multipleChoiceFrame.createRadioButtons(self.current_question, values=self.quiz_options)
+            self.multipleChoiceFrame.grid(row=0, column=3, padx=40, pady=10, sticky="nsew")
+
+    def ignoreCaseSensitive(self, state):
+        if state is True:
+            Student.answer = Student.answer.lower()
+            self.correct_answer = self.correct_answer.lower()
+        else:
+            return False
+
+    def getStudentAnswers(self):
+        # Get current question data
+        if self.quiz_type == 'Multiple Choice':
+            # Get multiple choice answer as a set of selected answers
+            Student.answer = self.multipleChoiceFrame.getRadioButtons()
+
+    def submitAnswer(self):
+        print('AI Response Here')
+        # Send student response to AI
+        model.complete()
+        self.checkAnswer()
+
+    def checkAnswer(self):
+        self.getStudentAnswers()
+            # Check if selected answers match correct answers
+        if set(Student.answer) == set(self.correct_answer):
+            Student.answers_correct += 1
+            messagebox.showinfo("Result", "Correct!")
+        else:
+            messagebox.showinfo("Result", "Incorrect!")
+        self.update_score()
+
+    def nextQuestion(self):
+        self.question_index += 1
+        if self.question_index == self.quiz_length:
+            messagebox.showinfo("Score", f"You scored {Student.score}% out of {self.max_score}%")
+            self.switchFrame(self.quizResultsFrame)
+            return
+        self.display_question()
+
+    def update_score(self):
+        Student.score = float((Student.answers_correct / self.quiz_length) * 100)
+        self.score_lbl.configure(text=f'Score: {Student.score}')
+        self.progress += (1 / self.quiz_length)
+        self.progress_bar.set(self.progress)
+        self.nextQuestion()
+
+# Create and run the quiz GUI
+quiz_data = [
+  {
+    "type": "Multiple Answer",
+    "question": "Which of the following are types of coral reefs? (Select all that apply)",
+    "answer": ["Fringing", "Barrier", "Atoll"],
+    "options": [
+      "Fringing",
+      "Barrier",
+      "Atoll",
+      "Patch"
+    ]
+  },
+  {
+    "type": "Multiple Choice",
+    "question": "What is the most common type of shark?",
+    "answer": "Blue shark",
+    "options": [
+      "Great white shark",
+      "Tiger shark",
+      "Hammerhead shark",
+      "Blue shark"
+    ]
+  },
+  {
+    "type": "Multiple Choice",
+    "question": "What percentage of the Earth's surface is covered by oceans?",
+    "answer": "71%",
+    "options": [
+      "45%",
+      "60%",
+      "71%",
+      "85%"
+    ]
+  },
+  {
+    "type": "Fill in the Blank",
+    "question": "The deepest part of the ocean is called the _________.",
+    "answer": "Challenger Deep"
+  }
+]
 
 "<><><><><><><><><><><><><><><>  Custom Tkinter Window Settings <><><><><><><><><><><><><><><><><><>"
 
