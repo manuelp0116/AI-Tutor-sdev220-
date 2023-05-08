@@ -247,6 +247,7 @@ class UI:
         window.grid_rowconfigure(0, weight=1)
         window.grid_columnconfigure(1, weight=1)
         self.currentTab = 'Student'
+        self.connectionStatus = ''
         self.chatWindows = []
         self.msg = ''
         # Quiz variable initialization:
@@ -302,6 +303,9 @@ class UI:
         self.modeDropdown = ctk.CTkOptionMenu(self.navbarFrame, values=["Learn", "Expand"])
         self.modeDropdown.grid(row=5, column=0, padx=20, pady=10, sticky="ew")
 
+        self.connectionStatus_lbl = ctk.CTkLabel(self.navbarFrame, textvariable=self.connectionStatus)
+        self.connectionStatus_lbl.grid(row=6, column=0, padx=20, pady=10, sticky="ew")
+
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navbarFrame, values=["Light", "Dark", "System"],)
         self.appearance_mode_menu.grid(row=9, column=0, padx=20, pady=15, sticky="s")
 
@@ -323,10 +327,10 @@ class UI:
         self.askAI_btn.grid(row=1, column=2, padx=5, pady=10, sticky='nsew')
         
         while model.connectionError == True:      
-            self.connectionStatus_lbl.configure('Status: Connection error!, Retrying...')
+            self.connectionStatus=('Status: Connection error!, Retrying...')
             self.askAI_btn.configure(state='disabled')
             self.createQuiz_btn.configure(state='disabled')
-        self.connectionStatus_lbl.configure('Status: Connected')
+        self.connectionStatus=('Status: Connected')
         self.askAI_btn.configure(state='normal')
         self.createQuiz_btn.configure(state='disabled')
 
