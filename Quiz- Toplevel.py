@@ -9,7 +9,7 @@ class Quiz (ctk.CTkToplevel):
         self.current_question = 0
         self.answers_correct = 0
         self.progress = 0
-        self.max_score = 100
+        self.max_score = 10
         self.score = 0
         
         # Create the GUI
