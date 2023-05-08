@@ -5,7 +5,7 @@ from openai.error import APIConnectionError # Connection Error Handling
 from typing import overload # function overloading
 from textwrap import dedent # To make docstrings look nicer in the editor
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 def retryConnection(max_retries):
     def decorator(function):
@@ -47,7 +47,7 @@ class ModelBase:
     #----------------------------- Main Method -----------------------------#
 
     @retryConnection(max_retries=100)
-    def complete(self, temperature=0.8, top_p=1):
+    def complete(self, temperature=0.8, top_p=1, stream=True):
         '''
         Get's a response from the AI according to the question layed out in the prompt
         This function takes in two optional parameters:
@@ -65,19 +65,23 @@ class ModelBase:
         self.chat["messages"].append(msg) #append the dictionary to the inner list in chat
 
         # Get the AI response
-        completion = self.api.create(model="gpt-4", messages=self.chat["messages"], temperature=temperature, top_p=top_p, stream=True)
+        if stream: # if the user wants to stream their response
+            completion = self.api.create(model="gpt-3.5-turbo", messages=self.chat["messages"], temperature=temperature, top_p=top_p, stream=True)
 
-        # print(completion.choices[0].message)
-        # print("\n", self.history)
-        # print("\n", completion.choices[0].message.content)
+            collectedMessages = []
+            for chunk in completion:
+                collectedMessages.append(chunk["choices"][0]["delta"])
+                if "content" in chunk["choices"][0]["delta"]:
+                    yield chunk["choices"][0]["delta"]["content"]
 
-        collectedMessages = []
-        for chunk in completion:
-            collectedMessages.append(chunk["choices"][0]["delta"])
-            if "content" in chunk["choices"][0]["delta"]:
-                yield chunk["choices"][0]["delta"]["content"]
-                
-        self.logCompletion(collectedMessages) #Add the AI's response to message history
+            self.logCompletion(collectedMessages) #Add the AI's response to message history
+
+        else:
+            completion = self.api.create(model="gpt-3.5-turbo", messages=self.chat["messages"], temperature=temperature, top_p=top_p)
+                    
+            self.logCompletion(completion) #Add the AI's response to message history
+
+            return completion["choices"][0]["content"]
 
     #----------------------------- Chat History Management -----------------------------#
 
@@ -253,7 +257,7 @@ class TutorGPT(ModelBase):
             ENFORCE THESE RULES
             Example prompt: generate a multiple choice quiz about math at the college level about how speakers use ultrasonic wavelengths to transmit sound throughout the air.
             Example output: Here's a multiple choice quiz about how speakers use ultrasonic wavelengths to transmit sound throughout the air as it relates to math.
-
+            
             Do you understand these rules?""")
 
         rulesStart = self.instructions.find("Rules:")
@@ -288,7 +292,7 @@ class TutorGPT(ModelBase):
         if self.mode == "learn":
             self.prompt = f"Remember the rules:\n{self.rules}\n\nQuestion: Can you help me learn about {topic}?" # Change the prompt to fit the user's requirements
         elif self.mode == "quiz":
-            self.prompt = f"Remember the rules:\n{self.rules}\n\nQuestion: Can you create a practice quiz about {topic} with{self.quizConfiguration[0]} Multiple Choice questions, with{self.quizConfiguration[1]} Multiple Answer questions, and with{self.quizConfiguration[2]} Short Answer questions?" # Change the prompt to fit the user's requirements
+            self.prompt = f"Remember the rules:\n{self.rules}\n\nQuestion: Can you create a practice quiz about {topic} with{self.quizConfiguration[0]} Multiple Choice questions, with{self.quizConfiguration[1]} Multiple Answer questions, and with{self.quizConfiguration[2]} Short Answer questions? Give the response in JSON format as a list of dictionaries, with keys for question, choices, answer. Put the choices key in the following format: {{A: <text for choice A>, B: <text for choice B>, C: <text for choice C>, D: <text for choice D>}}, create the quiz for a {self.gradeLevel} student about {self.subject}. In particular, focus on {topic}. Make the quiz 10 questions long with 4 choices each." # Change the prompt to fit the user's requirements
         else:
             if self.mode == "expand":
                 print("Add topic reqiures a topic name, not a topic description. Use addExcerpt()")
