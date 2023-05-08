@@ -6,7 +6,7 @@ from ai import TutorGPT # The AI class
 
 model = TutorGPT('history', 'college', 'learn')
 
-root = ctk.CTk() # Create the app's customtkinter window
+root = ctk.CTk() # Create the app's customtkinter w\indow
 
 title = ('AI Tutor') 
 
@@ -96,7 +96,7 @@ class Student:
         self.answer = ''
         self.chatInput = ''
         self.answers_correct = 0
-        self.student_name = ''
+        self.name = ''
         self.score = 0
 
 # Quiz class. This class handles the quiz related variables.
@@ -285,7 +285,7 @@ class UI:
         
         self.chatBtn = ctk.CTkButton(self.navbarFrame, corner_radius=0, height=40, border_spacing=10, text="Chat",
                                                    fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                   image=self.chatBtn_image, anchor="w", command=lambda: self.navbarEvent('Chat', self.ChatFrame))
+                                                   image=self.chatBtn_image, anchor="w", command=lambda: self.navbarEvent('Chat', self.chatFrame))
         self.chatBtn.grid(row=2, column=0, sticky="ew")
 
         self.quizBtn_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "quiz_dark.png")),
@@ -296,14 +296,19 @@ class UI:
                                                       image=self.quizBtn_image, anchor="w", command=lambda: self.navbarEvent('Quiz', self.quizFrame))
         self.quizBtn.grid(row=3, column=0, sticky="ew")
 
+        self.modeDropdown_lbl = ctk.CTkLabel(self.navbarFrame, text="Select a study \n mode below:")
+        self.modeDropdown_lbl.grid(row=4, column=0, padx=20, pady=5, sticky="ew")
+
+        self.modeDropdown = ctk.CTkOptionMenu(self.navbarFrame, values=["Learn", "Expand"])
+        self.modeDropdown.grid(row=5, column=0, padx=20, pady=10, sticky="ew")
+
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navbarFrame, values=["Light", "Dark", "System"],)
         self.appearance_mode_menu.grid(row=9, column=0, padx=20, pady=15, sticky="s")
 
         #####################################################################################################
         "<><><><><><><><><><><><><><>  Handler to creat a new Chat Frame  <><><><><><><><><><><><><><><><><>"
         #####################################################################################################
-        self.chatFrame = ctk.CTkFrame(self.window, corner_radius=0, fg_color="transparent")
-        self.chatFrame(self.window, corner_radius=0, fg_color="grey20")
+        self.chatFrame = ctk.CTkFrame(window, corner_radius=0, fg_color="transparent")
         self.chatFrame.grid_rowconfigure(0, weight=1)
         self.chatFrame.grid_columnconfigure(1, weight=1)
         self.chatFrame.grid(row=0, column=1, columnspan=4, sticky="nsew", padx=20, pady=10)
@@ -311,17 +316,10 @@ class UI:
         self.chatFrame_widgets = ctk.CTkFrame(self.chatFrame, corner_radius=0, fg_color="transparent")
         self.chatFrame_widgets.grid(row=0, column=1, columnspan=4, sticky="nsew", padx=20, pady=10)
 
-        new_chat_btn = ctk.CTkButton(root, text="New Chat", command=self.newChat())
-        new_chat_btn.pack()
-
-        # Create a scrollable frame to contain each the conversation between the user and the AI
-        self.chatOutputWindow = ctk.CTkScrollableFrame(self.chatFrame, corner_radius=0, fg_color="gray15")
-        self.chatOutputWindow.grid(row=0, column=1, columnspan=4, sticky="nsew", padx=20, pady=10)
-
         # Create question input field and add widgets into the chatFrame
         self.chat_input = ctk.CTkEntry(self.chatFrame, placeholder_text=f"{self.placeholder}", fg_color="transparent")
         self.chat_input.grid(row=1, column=1, padx=5, pady=10, sticky='nsew')
-        self.askAI_btn = ctk.CTkButton(self.chatFrame, text="Ask AI", command=lambda: self.button_handler(self.chat_input.get()))
+        self.askAI_btn = ctk.CTkButton(self.chatFrame, text="Ask AI", command=lambda: self.create_request(self.chat_input.get()))
         self.askAI_btn.grid(row=1, column=2, padx=5, pady=10, sticky='nsew')
         
         while model.connectionError == True:      
@@ -360,23 +358,21 @@ class UI:
         #####################################################################################################
         "<><><><><><><><><><><><><><><><><><>   Create Quiz Frame   <><><><><><><><><><><><><><><><><><><><>"
         #####################################################################################################
-
         self.quizFrame = ctk.CTkFrame(window, corner_radius=0, fg_color="transparent")
-        self.quizFrame.grid_columnconfigure(0, weight=1)
+        self.quizFrame.grid_rowconfigure(4, weight=1)
         self.quizFrame.grid_columnconfigure(1, weight=1)
         self.quizFrame.grid(row=0, column=1, columnspan=4, sticky="nsew", padx=20, pady=10)
+        self.quizCreationFrame = ctk.CTkFrame(self.quizFrame, corner_radius=0, fg_color="transparent")
+        self.quizCreationFrame.grid(row=0, column=1, columnspan=4, sticky="nsew", padx=20, pady=10)
+        self.quiz_subjectDropdown = ctk.CTkOptionMenu(self.quizCreationFrame, values=["Math", "History", "Geography", "Health", "Science"])
+        self.quiz_subjectDropdown.grid(row=7, column=1, padx=20, pady=10)
+        self.quiz_lvlDropdown = ctk.CTkOptionMenu(self.navbarFrame, values=["Elementary", "Middle", "High", "College"])
+        self.quiz_lvlDropdown.grid(row=4, column=2, padx=20, pady=10)
         
-        self.createQuizBtn = ctk.CTkButton(self.quizCreationScreen, text="Create a Quiz", command=self.buttonEvent('Create Quiz'))
-
-        self.retryQuizBtn = self.createQuizBtn = ctk.CTkButton(self.quizCreationScreen, text="Create a Quiz", command=self.buttonEvent('Create Quiz'))
- 
-        # Create heading for dropdowns
-
-        # Create dropdowns for subjects and levels
-
-        #Create 'start learning' button
-
-    def createQuiz(self):
+        self.quiz_input = ctk.CTkEntry(self.quizFrame, placeholder_text=f"{self.placeholder}", fg_color="transparent")
+        self.quiz_input.grid(row=1, column=1, padx=5, pady=10, sticky='nsew')
+        self.createQuiz_btn = ctk.CTkButton(self.quizCreationFrame, text="Create a Quiz", command=lambda: self.createQuiz())
+        self.createQuiz_btn.grid(row=1, column=2, padx=5, pady=10, sticky='nsew')
         self.quizContainerFrame = ctk.CTkFrame(self.quizFrame, corner_radius=0, fg_color="transparent")
         self.quizContainer.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         self.quizContainer = ctk.CTkFrame(self.quizContainerFrame, corner_radius=0, fg_color="transparent")
@@ -392,20 +388,23 @@ class UI:
         self.progress_bar.grid(row=7, column=0, sticky="nsew", pady=10, padx=40)
         self.progress_bar.set(0)
 
+    def createQuiz(self):
+        self.switchFrame(frame=self.quizContainerFrame)
+
     def checkFields(self):
         if self.currentTab == 'Chat':
             while self.current_InputField.get() != '':
                 self.askAI_btn.configure(state='normal')
             self.askAI_btn.configure(state='disabled')
         elif self.currentTab == 'Quiz':
-            while self.chat_input.get() != '':
+            while self.quiz_input.get() != '':
                 self.createQuiz_btn.configure(state='normal')
             self.createQuiz_btn.configure(state='disabled')
 
         # select default frame
         self.navbarEvent("Student")
      
-    def buttonEvent(self, name):
+    def tabEvent(self, name):
        name = self.name
        self.chatBtn.configure(fg_color=("gray75", "gray75") if name == "Home" else "transparent")
        self.quizBtn.configure(fg_color=("gray75", "gray75") if name == "Chat" else "transparent")
@@ -447,7 +446,7 @@ class UI:
         root.title(f'{title} - {self.currentTab} screen') 
 
     def navbarEvent(self, name, frame):
-        self.buttonEvent(name)
+        self.tabEvent(name)
         # show selected frame
         self.switchFrame(frame)
         self.setCurrentScreen(name)
@@ -457,6 +456,9 @@ class UI:
         Quiz(response)
 
     '<><><><><><><><><><><> These functions set variables <><><><><><><><><><><> '
+    def getCurrentDropdowns(self, dropdown):
+        currentSubjectDropdown = dropdown
+        currentGradeLevelDropdown = dropdown
 
     def setMode(self, mode):
         model.setMode(mode)

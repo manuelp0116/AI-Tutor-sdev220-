@@ -57,7 +57,7 @@ class UI:
         
         self.chatBtn = ctk.CTkButton(self.navbarFrame, corner_radius=0, height=40, border_spacing=10, text="Chat",
                                                    fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                   image=self.chatBtn_image, anchor="w", command=lambda: self.navbarEvent('Chat', self.ChatFrame))
+                                                   image=self.chatBtn_image, anchor="w", command=lambda: self.navbarEvent('Chat', self.chatFrame))
         self.chatBtn.grid(row=2, column=0, sticky="ew")
 
         self.quizBtn_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "quiz_dark.png")),
@@ -242,6 +242,7 @@ class UI:
     def navbarEvent(self, name, frame):
         self.buttonEvent(name)
         # show selected frame
+        self.currentFrame = frame
         self.switchFrame(frame)
         self.setCurrentScreen(name)
 
