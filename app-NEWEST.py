@@ -1,12 +1,18 @@
-'''
-APP DESCRIPTION HERE
-'''
+# Program name:       AI Tutor
+# Author:             Braden Shrum, Manuel Padre Charles Phillips Chloe Moore, 
+# Version:            version 1.0
+# Last revision date: 04/29/2023
+# The objective of this program is to help a student study more effectively 
+# This enable the student to narrow and tailor study help to their own needs such as subject, study level and specific learning parameters. 
+
+# Example AI Request: 'I am a {study level} student, studying {subject}, teach me about photosynthesis'
+# Wherein study level='high school' and subject='Biology'
+
 
 # Standard libraries we might use later on
 import random
 import math
 import time
-from gui_BEST import Quiz
 
 # User Created Classes
 from ai import TutorGPT # The AI class
@@ -25,6 +31,29 @@ from ai import TutorGPT # The AI class
 #------------------------------------------------------------
 # Tkinter Functions go here
 
+mode.setMode(mode) # 
+model.setQuizConfiguration(setup)
+model.addExcerpt(excerpt)
+
+tuple = {mode}, {setMode}
+
+def eventHandler(self, mode, event)
+
+modes = {"mode1": mode_1, "mode2": mode_2}
+
+def handle_mode(mode):
+    function = modes.get(mode)
+    if function is not None:
+        function()
+    else:
+        print("Invalid mode")
+
+for mode in modes:
+    handle_mode(mode)
+
+   
+    
+
 
 
 #------------------------------------------------------------
@@ -37,6 +66,8 @@ def testAI(model: TutorGPT):
     right now, the user cannot input anything, but this will come later as we integrate the GUI into the program
     '''
     mode = input("""
+
+    
         
         Choose a study mode: 
             Learn: Learn about any topic
@@ -69,8 +100,6 @@ def testAI(model: TutorGPT):
                     setup[i] = ""
                 elif value == "n":
                     setup[i] = "out"
-
-            # print(setup) # debug
             
             model.setQuizConfiguration(setup) #set the quiz configuration
 
@@ -102,8 +131,6 @@ def testAI(model: TutorGPT):
             continue # skip over the rest of the code and restart the loop
 
         response = model.complete() # get the response stream
-
-        Quiz.setQuizData(response)
 
         print('\n\n')
 

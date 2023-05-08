@@ -1,16 +1,17 @@
 import customtkinter as ctk # Import customtkinter module using a shortened version 'ctk'
-from tkinter import messagebox
+from tkinter import messagebox # This is used to show a messagebox
 import json, os, time
 from PIL import Image # Import python image library for the button images
 from ai import TutorGPT # The AI class
 
-model = TutorGPT('history', 'college', 'quiz')
+model = TutorGPT('history', 'college', 'learn')
 
 root = ctk.CTk() # Create the app's customtkinter window
-response = 'This is the test for a message to print word by word. This will prove to Braden that it can work in the GUI.'
 
 title = ('AI Tutor') 
 
+# This class is used to create a new scrollable frame. Once instantiated, the program can add mesages from both
+# User and Assistant.
 class scrollableFrame(ctk.CTkScrollableFrame):
     def __init__(self, senders):
         super().__init__()
@@ -32,12 +33,12 @@ class scrollableFrame(ctk.CTkScrollableFrame):
                 for chunk in response():
                     if chunk.endswith("."):
                         msgbox.insert('end', ".\n")
-                        UI.update_textbox_height(25)
+                        UI.update_textbox_height(20)
                         msgbox.update()
                         time.sleep(0.03)
                     else:
-                        self.msgbox.configure(chunk)
-                        self.msgbox.update()
+                        msgbox.configure(chunk)
+                        msgbox.update()
                         time.sleep(0.03)
     
 class controlPanel(ctk.CTkFrame):
@@ -78,6 +79,13 @@ class controlPanel(ctk.CTkFrame):
             if checkbox.get() == 1:
                 checked_checkboxes.append(checkbox.cget("text"))
         return checked_checkboxes
+    
+    def getSwitches(self):
+        toggled_switches = []
+        for switch in self.switches:
+            if self.switch_var.get() == 'on':
+                toggled_switches.append(switch.cget("text"))
+        return toggled_switches
 
     def getRadioButtons(self):
         return self.variable.get()
@@ -119,7 +127,7 @@ class Quiz:
     def create_widgets(self):
         self.mapQuizData()
         if self.quiz_type == 'Fill in the Blank':
-            UI.question_label.configure(self, text=Quiz.current_question, fg_color="gray30", corner_radius=6)
+            UI.question_label.configure(UI.quizContainer, text=Quiz.current_question, fg_color="gray30", corner_radius=6)
             UI.question_label.grid(row=1, column=0, sticky="ew")
             self.answer_entry = ctk.CTkEntry(self)
             self.answer_entry.grid(row=4, column=0, sticky="ew", padx=30)
@@ -128,7 +136,6 @@ class Quiz:
             self.multipleChoiceFrame = controlPanel(UI.quizContainer)
             self.multipleChoiceFrame.createRadioButtons(self.current_question, values=self.quiz_options)
             self.multipleChoiceFrame.grid(row=0, column=3, padx=40, pady=10, sticky="nsew")
-                               
         elif self.quiz_type == 'Multiple Answer':
             self.quiz_options = self.quiz_data[self.question_index]['options']
             self.multipleAnswerFrame = controlPanel(UI.quizContainer)
@@ -180,7 +187,7 @@ class Quiz:
         self.question_index += 1
         if self.question_index == self.quiz_length:
             messagebox.showinfo("Score", f"You scored {Student.score}% out of {self.max_score}%")
-            self.destroy()
+            UI.switchFrame('quizResultsFrame')
             return
         self.display_question()
 
@@ -191,7 +198,47 @@ class Quiz:
         UI.progress_bar.set(self.progress)
         self.nextQuestion()
 
-response = model.complete()
+# Create and run the quiz GUI
+quiz_data = [
+  {
+    "type": "Multiple Answer",
+    "question": "Which of the following are types of coral reefs? (Select all that apply)",
+    "answer": ["Fringing", "Barrier", "Atoll"],
+    "options": [
+      "Fringing",
+      "Barrier",
+      "Atoll",
+      "Patch"
+    ]
+  },
+  {
+    "type": "Multiple Choice",
+    "question": "What is the most common type of shark?",
+    "answer": "Blue shark",
+    "options": [
+      "Great white shark",
+      "Tiger shark",
+      "Hammerhead shark",
+      "Blue shark"
+    ]
+  },
+  {
+    "type": "Multiple Choice",
+    "question": "What percentage of the Earth's surface is covered by oceans?",
+    "answer": "71%",
+    "options": [
+      "45%",
+      "60%",
+      "71%",
+      "85%"
+    ]
+  },
+  {
+    "type": "Fill in the Blank",
+    "question": "The deepest part of the ocean is called the _________.",
+    "answer": "Challenger Deep"
+  }
+]
 
 class UI:
     def __init__(self, window):
@@ -200,18 +247,9 @@ class UI:
         window.grid_rowconfigure(0, weight=1)
         window.grid_columnconfigure(1, weight=1)
         self.currentTab = 'Student'
+        self.chatWindows = []
         self.msg = ''
         # Quiz variable initialization:
-        self.question_label = ctk.CTkLabel(self.quizContainer, text='')
-        self.question_label.grid(row=0, column=0)
-        self.score_lbl = ctk.CTkLabel(self.quizContainer, text='')
-        self.score_lbl.grid(row=8, column=0,)
-        self.submit_button = ctk.CTkButton(self.quizContainer, text='Submit', command=self.submitAnswer)
-        self.submit_button.grid(row=5, column=0, sticky="nsew", pady=10, padx=40)
-        self.progress_bar = ctk.CTkProgressBar(self.quizContainer)
-        self.progress_bar.configure(mode="determinate")
-        self.progress_bar.grid(row=7, column=0, sticky="nsew", pady=10, padx=40)
-        self.progress_bar.set(0)
 
         #####################################################################################################
         "<><><><><><><><><><><><><><><><><><><><>  Load Images   <><><><><><><><><><><><><><><><><><><><><>"
@@ -264,7 +302,6 @@ class UI:
         #####################################################################################################
         "<><><><><><><><><><><><><><>  Handler to creat a new Chat Frame  <><><><><><><><><><><><><><><><><>"
         #####################################################################################################
-    
         self.chatFrame = ctk.CTkFrame(self.window, corner_radius=0, fg_color="transparent")
         self.chatFrame(self.window, corner_radius=0, fg_color="grey20")
         self.chatFrame.grid_rowconfigure(0, weight=1)
@@ -298,7 +335,6 @@ class UI:
         #####################################################################################################
         "<><><><><><><><><><><><><><><><><><>   Create Student Frame   <><><><><><><><><><><><><><><><><><>"
         #####################################################################################################
-        
         self.studentFrame = ctk.CTkFrame(window, corner_radius=0, fg_color="transparent")
         self.studentFrame.grid(row=0, column=1, columnspan=4, sticky="nsew", padx=20, pady=10)
         self.studentFrame.grid_rowconfigure(3, weight=1)
@@ -324,7 +360,7 @@ class UI:
         #####################################################################################################
         "<><><><><><><><><><><><><><><><><><>   Create Quiz Frame   <><><><><><><><><><><><><><><><><><><><>"
         #####################################################################################################
-        
+
         self.quizFrame = ctk.CTkFrame(window, corner_radius=0, fg_color="transparent")
         self.quizFrame.grid_columnconfigure(0, weight=1)
         self.quizFrame.grid_columnconfigure(1, weight=1)
@@ -345,6 +381,16 @@ class UI:
         self.quizContainer.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         self.quizContainer = ctk.CTkFrame(self.quizContainerFrame, corner_radius=0, fg_color="transparent")
         self.quizContainer.grid(row=0, column=2, sticky="nsew", padx=20, pady=10)
+        self.question_label = ctk.CTkLabel(self.quizContainer, text='')
+        self.question_label.grid(row=0, column=0)
+        self.score_lbl = ctk.CTkLabel(self.quizContainer, text='')
+        self.score_lbl.grid(row=8, column=0,)
+        self.submit_button = ctk.CTkButton(self.quizContainer, text='Submit', command=self.submitAnswer)
+        self.submit_button.grid(row=5, column=0, sticky="nsew", pady=10, padx=40)
+        self.progress_bar = ctk.CTkProgressBar(self.quizContainer)
+        self.progress_bar.configure(mode="determinate")
+        self.progress_bar.grid(row=7, column=0, sticky="nsew", pady=10, padx=40)
+        self.progress_bar.set(0)
 
     def checkFields(self):
         if self.currentTab == 'Chat':
@@ -426,6 +472,9 @@ class UI:
 
     def setGradeLvl(self):
         gradeLevel = self.gradeLevelDropdown.get()
+
+    def getMode(self):
+        mode = self.modeDropdown.get()
 
     def change_appearance_mode_event(self, new_appearance_mode):
         ctk.set_appearance_mode(new_appearance_mode)
