@@ -25,26 +25,13 @@ class storagesolutions:
     def housekeep(self):
         #use this function at the start of the app to create and get folders ready, it will create the necessary folders for the stuff that needs to be saved, and will check for those same folders in the future
         if os.path.exists("quizSTG") and os.path.exists("chatSTG"):
-<<<<<<< HEAD
-            print("folders exist")
-            
+            print("folder exist")
         
-        else:
-            pathList = ['quizSTG', 'chatSTG']
+         else:
+                pathList = ['quizSTG', 'chatSTG']
             for i in pathList:
                 path = os.path.join(i)
                 os.mkdir(path)
-=======
-            print("folder exist")
-        
-        else:
-            quiz_dir = "QuizSTG" #name is up to changes
-            chat_dir = ""
-            
-            path = os.path.join(directory) #creates name of the folder
-            
-            os.mkdir(path)
->>>>>>> refs/remotes/origin/main
             
     def saveQuiz(self, subject, grade, response):
         #will save output from AI in a json file, parsing could be necesary, naming conventions for the files are up to change.
