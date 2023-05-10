@@ -4,7 +4,7 @@ from openai.error import APIConnectionError # Connection Error Handling
 
 from typing import Any, overload # function overloading
 from textwrap import dedent # To make docstrings look nicer in the
-import copy
+import inspect
 
 openai.api_key = "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"
 
@@ -15,8 +15,11 @@ def retryConnection(max_retries):
                 try:
                     result = function(*args, **kwargs) # complete() function
 
-                    for chunk in result:
-                        yield chunk
+                    if inspect.isgenerator(result):
+                        for chunk in result:
+                            yield chunk
+                    else:
+                        return result
 
                     break
                 except APIConnectionError:
@@ -37,7 +40,24 @@ class ModelBase:
         self.history = [] # This is the stored chat history.
         self.api = openai.ChatCompletion()
 
-        self.chat = { #initialize the chat with a system prompt
+        # self.chats = { # initializes the chats with a system prompt and a starter prompt
+        #     "chat": {
+        #         "messages": [
+        #             {"role": "system", "content": systemPrompt},
+        #             {"role": "user", "content": prompt},
+        #             {"role": "assistant", "content": "Understood! How can I help you?"}
+        #         ]
+        #     },
+        #     "quiz": {
+        #         "messages": [
+        #             {"role": "system", "content": systemPrompt},
+        #             {"role": "user", "content": prompt},
+        #             {"role": "assistant", "content": "Understood! How can I help you?"}
+        #         ]
+        #     }
+        # }
+
+        self.chat = {
             "messages": [
                 {"role": "system", "content": systemPrompt},
                 {"role": "user", "content": prompt},
@@ -63,11 +83,11 @@ class ModelBase:
 
         msg = {"role": "user", "content": self.prompt} # Parse the user prompt
 
-        self.chat["messages"].append(msg) #append the dictionary to the inner list in chat
+        self.chats["messages"].append(msg)  #append the dictionary to the inner list in chat
 
         # Get the AI response
         if stream: # if the user wants to stream their response
-            completion = self.api.create(model="gpt-3.5-turbo", messages=self.chat["messages"], temperature=temperature, top_p=top_p, stream=True)
+            completion = self.api.create(model="gpt-3.5-turbo", messages=self.chats["messages"], temperature=temperature, top_p=top_p, stream=True)
 
             collectedMessages = []
             for chunk in completion:
@@ -78,7 +98,7 @@ class ModelBase:
             self.logCompletion(collectedMessages) #Add the AI's response to message history
 
         else:
-            completion = self.api.create(model="gpt-3.5-turbo", messages=self.chat["messages"], temperature=temperature, top_p=top_p)
+            completion = self.api.create(model="gpt-3.5-turbo", messages=self.chats["messages"], temperature=temperature, top_p=top_p)
 
             self.logCompletion(completion) #Add the AI's response to message history
 
@@ -149,12 +169,12 @@ class ModelBase:
 
     def store(self, message: dict[str, str] | str, *, role="user"):
         if isinstance(message, dict): # if the message is a dictionary
-            self.chat["messages"].append(message) # store the message
+            self.chats["messages"].append(message) # store the message
 
         elif isinstance(message, str): # if the message is a string
             if role in ("user", "assistant"): # if the role is either "user" or "assistant"
                 messageDict = {"role": role, "content": message} # construct the message dictionary
-                self.chat["messages"].append(messageDict) # store the message
+                self.chats["messages"].append(messageDict) # store the message
             else: # if the role is anything but "user" or "assistant"
                 print(f"Role must be either \"user\" or \"assistant\". You entered {role}.") # print an error message
 
@@ -184,12 +204,12 @@ class ModelBase:
 
     def storeAt(self, index, message: dict[str, str] | str, role="user"):
         if isinstance(message, dict): # if the message is a dictionary
-            self.chat["messages"].insert(index - 1, message) # insert the message at the position specified
+            self.chats["messages"].insert(index - 1, message) # insert the message at the position specified
 
         elif isinstance(message, str): # if the message is a string
             if role in ("user", "assistant"): # if the string is either "user" or "assistant"
                 messageDict = {"role": role, "content": message} # construct the message dictionary
-                self.chat["messages"].insert(index - 1, messageDict) # insert the message at the position specified
+                self.chats["messages"].insert(index - 1, messageDict) # insert the message at the position specified
             else: # if the string is anything but "user" or "assistant"
                 print(f"Role must be either \"user\" or \"assistant\". You entered {role}.") # print an error
 
@@ -218,18 +238,18 @@ class ModelBase:
         ...
 
     def modify(self, index, newMessage: dict[str, str] | str, role=""):
-        MAX_INDEX = len(self.chat["messages"]) # the amount of messages in the chat - a constant variable
+        MAX_INDEX = len(self.chats["messages"]) # the amount of messages in the chat - a constant variable
         RESTRICTED_NUMS = [1, (MAX_INDEX * -1) - 1] # These are the indexes of the AI instructions that shouldn't be modified - a constant variable
 
         if isinstance(newMessage, dict):
             if index > MAX_INDEX: # if the index is more than the amount of messages in the chat
                 print(f"The chat history is not more than {MAX_INDEX} messages long!")
             else:
-                for i, dicts in enumerate(self.chat["messages"]): # enumerate through the dictionaries to get the dictionary and the index
+                for i, dicts in enumerate(self.chats["messages"]): # enumerate through the dictionaries to get the dictionary and the index
                     if i == index: # if i equals the index input by the user
                         if i not in RESTRICTED_NUMS:
-                            self.chat["messages"].remove(dicts) # remove the dictionary at that location
-                            self.chat["messages"].insert(index, newMessage) # insert the new message
+                            self.chats["messages"].remove(dicts) # remove the dictionary at that location
+                            self.chats["messages"].insert(index, newMessage) # insert the new message
                         else:
                             print("The index you have chosen is the AI instructions. You cannot delete this index. Choose another index")
 
@@ -237,17 +257,17 @@ class ModelBase:
             if index > MAX_INDEX: # if the index is more than the amount of messages in the chat
                 print(f"The chat history is not more than {MAX_INDEX} messages long!")
             else:
-                for i, dicts in enumerate(self.chat["messages"]): # enumerate through the dictionaries to get the dictionary and the index
+                for i, dicts in enumerate(self.chats["messages"]): # enumerate through the dictionaries to get the dictionary and the index
                     if i == index: # if i equals the index input by the user
                         if i not in RESTRICTED_NUMS: # if the index is not restricted
                             if role == "": # if the role string has not been set
-                                temp = self.chat["messages"].pop(i) # remove the dictionary at that location and grab a temporary version of it
+                                temp = self.chats["messages"].pop(i) # remove the dictionary at that location and grab a temporary version of it
                                 messageDict = {"role": temp["role"], "content": newMessage} # construct the message dictionary
-                                self.chat["messages"].insert(index, messageDict) # insert the new message
+                                self.chats["messages"].insert(index, messageDict) # insert the new message
                             else: # if the role string has been set
-                                self.chat["messages"].remove(dicts) # remove the dictionary at that location and grab a temporary version of it
+                                self.chats["messages"].remove(dicts) # remove the dictionary at that location and grab a temporary version of it
                                 messageDict = {"role": role, "content": newMessage} # construct the message dictionary
-                                self.chat["messages"].insert(index, messageDict) # insert the new message
+                                self.chats["messages"].insert(index, messageDict) # insert the new message
                         else:
                             print("The index you have chosen is the AI instructions. You cannot delete this index. Choose another index")
 
@@ -255,9 +275,9 @@ class ModelBase:
         '''
         clears the chat history so the user can start from scratch conversing with the AI
         '''
-        self.chat["messages"].clear() #Clear the list
+        self.chats["messages"].clear() #Clear the list
 
-        self.chat = { #Re-add the system prompt (this should never be deleted)
+        self.chats = { #Re-add the system prompt (this should never be deleted)
             "messages": [{"role": "system", "content": self.systemPrompt}]
         }
 
@@ -271,16 +291,16 @@ class ModelBase:
 
         In the case of -1, the index will work like normal in deleting the most recent response
         '''
-        MAX_INDEX = len(self.chat["messages"]) # the amount of messages in the chat - a constant variable
+        MAX_INDEX = len(self.chats["messages"]) # the amount of messages in the chat - a constant variable
         RESTRICTED_NUMS = [0, 1, (MAX_INDEX * -1) - 2, (MAX_INDEX * -1) - 1] # These are the indexes of the AI instructions that shouldn't be deleted - a constant variable
 
         if index > MAX_INDEX: # if the index is more than the amount of messages in the chat
             print(f"The chat history is not more than {MAX_INDEX} messages long!")
         else:
-            for i, dicts in enumerate(self.chat["messages"]): # enumerate through the dictionaries to get the dictionary and the index
+            for i, dicts in enumerate(self.chats["messages"]): # enumerate through the dictionaries to get the dictionary and the index
                 if i == index: # if i equals the index input by the user plus the offset
                     if i not in RESTRICTED_NUMS:
-                        self.chat["messages"].remove(dicts) # remove the dictionary at that location
+                        self.chats["messages"].remove(dicts) # remove the dictionary at that location
                     else:
                         print("The index you have chosen is the AI instructions. You cannot delete this index. Choose another index")
 
