@@ -9,7 +9,7 @@ root = ctk.CTk()
 
 model = TutorGPT("science", "high school", "quiz")
 
-model.addTopic("how time affects space")
+model.learnMode("how time affects space")
 
 response = model.complete()
 

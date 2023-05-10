@@ -322,7 +322,7 @@ class UI:
         model.setMode(mode)
 
     def setExcerpt(self, excerpt):
-        model.addExcerpt(excerpt)
+        model.excerptMode(excerpt)
 
     def setSubjectLvl(self):
         subjectLvl = self.subjectLvlDropdown.get()

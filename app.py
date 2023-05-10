@@ -74,17 +74,17 @@ def testAI(model: TutorGPT):
             
             model.setQuizConfiguration(setup) #set the quiz configuration
 
-            model.addTopic(topic) # add the quiz topic and settings
+            model.learnMode(topic) # add the quiz topic and settings
 
         elif mode == "learn": # if the mode is learn
             # get the topic and add it
             topic = input("Please enter a topic of study > ")
-            model.addTopic(topic)
+            model.learnMode(topic)
 
         elif mode == "expand": # if the mode is expand
             # get the text excerpt and add it
             excerpt = input("Paste in your excerpt of text here > ")
-            model.addExcerpt(excerpt)
+            model.excerptMode(excerpt)
 
         else: # input validation
             print("Please choose a valid option \n")
