@@ -51,44 +51,19 @@ class storagesolutions:
             fixChat = chat.split() #neeed the necesary parameter to split and parse the chat
             fp.write(fixChat)
         fp.close
-    
+        
+    def readFiles():
+        '''
+        this function prints all entries in a folder, and splits the names
+        so its easily accesible, ,maily used to access old tests
+        '''
+        with os.scandir('') as entries: #scan directory, need to work on making it dinamic
+            for entry in entries: 
+                name = entry.split('.') #split the files and creates the list 
+                name_list = [name]
+                print(name_list) #print just the file names.
 
-
-
-'''
-def saveQuiz(response, subject):
-    
-  
-    if os.path.exists("quizSTG"): #checks fro folder to store the quizzes
-
-        filename = "quiz" + str(1) #creates file name, need to find a way to create diff names every time 
-        file_path = filename + ".json"
-        file_dir = os.path.dirname("QuizSTG")
-        with open(file_path, 'w') as fp:
-            json.dump(response, fp)
-    else:    
-        directory = "QuizSTG"
-        # Path
-        path = os.path.join(directory)
-  
-        # Create the directory
-        os.mkdir(path)
-
-def saveChat(response):
-    if os.path.exists("ChatSTG"):
-    
-        count = 1
-        file_path = "Chat" + str(count)
-        count += 1
-        file_dir = os.path.dirname("ChatSTG")
-        with open(file_path, 'w') as fp:
-            json.dump(response, fp)
-    else:    
-        directory = "ChatSTG"
-        # Path
-        path = os.path.join(directory)
-  
-        # Create the directory
-        os.mkdir(path)
-'''
-    
+        '''
+        need a way for the user to click and access these tests.
+        '''
+            
