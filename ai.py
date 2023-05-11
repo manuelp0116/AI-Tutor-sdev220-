@@ -6,7 +6,7 @@ from typing import Any, overload # function overloading
 from textwrap import dedent # To make docstrings look nicer in the
 import inspect
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 def retryConnection(max_retries):
     def decorator(function):
@@ -25,7 +25,7 @@ def retryConnection(max_retries):
                 except APIConnectionError:
                     if i % 2 == 0:
                         print(f"Connection Failed, retrying... ({i}/{max_retries})\n")
-                    
+
                     if i == max_retries:
                         print("Insure you are connected to the internet and try again\n")
                         return True # Return True to communicate the error with the GUI
@@ -40,7 +40,7 @@ class ModelBase:
         self.history = [] # This is the stored chat history.
         self.api = openai.ChatCompletion()
 
-        # self.chats = { # initializes the chats with a system prompt and a starter prompt 
+        # self.chat = { # initializes the chat with a system prompt and a starter prompt
         #     "chat": {
         #         "messages": [
         #             {"role": "system", "content": systemPrompt},
@@ -129,7 +129,7 @@ class ModelBase:
             if "role" in message: # If the "role" dictionary is found, place it in the result dictionary
                 resultDict.update(message)
             else: # Every other dictionary (the "content" dictionaries) will be placed in a list
-                collectedResponse.append(message)   
+                collectedResponse.append(message)
 
         ResponseDict.update(collectedResponse[0]) # Update the responseDict with the first dictionary in the collectedResponse list
 
@@ -225,7 +225,7 @@ class ModelBase:
             `message`: dict[str, str] - the message to be added.
         '''
         ...
-    
+
     @overload
     def modify(self, index, newMessage: str, role=""):
         '''
@@ -235,10 +235,10 @@ class ModelBase:
             `index`: int - where in the history the message should be added
             `message`: dict[str, str] - the message to be added.
             `role`: Optional[string] - The role of the message ("user", or "assistant")
-            
+
         '''
         ...
-    
+
     def modify(self, index, newMessage: dict[str, str] | str, role=""):
         MAX_INDEX = len(self.chat["messages"]) # the amount of messages in the chat - a constant variable
         RESTRICTED_NUMS = [1, (MAX_INDEX * -1) - 1] # These are the indexes of the AI instructions that shouldn't be modified - a constant variable
@@ -285,10 +285,10 @@ class ModelBase:
 
     def delete(self, index):
         '''
-        Deletes a specific message from message history by finding it's index. 
+        Deletes a specific message from message history by finding it's index.
         This function takes one parameter:
             `index` - the specific message to delete from chat history
-        
+
         indexes 0, 1, and the respective negative indexes will be restricted for protection of the AI instructions
 
         In the case of -1, the index will work like normal in deleting the most recent response
@@ -326,9 +326,9 @@ class InstructionsManager:
     '''
     def __init__(self, subject, gradeLevel):
         self.rules = [
-            {"Rule": "Don't generate content that isn't based on the subject", "Sub Rules": []}, 
-            {"Rule": "Don't generate content that's not at the grade level", "Sub Rules": []}, 
-            {"Rule": "Don't generate any content that isn't relevant", "Sub Rules": ["a. For example, Alien Planets have nothing to do with Health. Pulleys and Levers have nothing to do with Programming"]}, 
+            {"Rule": "Don't generate content that isn't based on the subject", "Sub Rules": []},
+            {"Rule": "Don't generate content that's not at the grade level", "Sub Rules": []},
+            {"Rule": "Don't generate any content that isn't relevant", "Sub Rules": ["a. For example, Alien Planets have nothing to do with Health. Pulleys and Levers have nothing to do with Programming"]},
             {"Rule": "Tell the user what rule an invalid prompt violates", "Sub Rules": ["a. for example if the user violates rule one, say: \"I'm sorry, but I am not allowed to generate any content that isn't based on your selected subject. Please change the topic or change your subject\""]}
         ]
 
@@ -346,9 +346,9 @@ class InstructionsManager:
             ENFORCE THESE RULES
             Example prompt: generate a multiple choice quiz about math at the college level about how speakers use ultrasonic wavelengths to transmit sound throughout the air.
             Example output: Here's a multiple choice quiz about how speakers use ultrasonic wavelengths to transmit sound throughout the air as it relates to math.
-            
+
             Do you understand these rules?""")
-        
+
     def addRule(self, rule, *subrules):
         '''
         Adds a single rule and a variable number of subrules to the rules list.
@@ -361,7 +361,7 @@ class InstructionsManager:
 
         Supports counting numbers if the number is not negative. If you want to delete rule 1, simply call
         >>> removeRule(1)
-        
+
         However, if you want to remove rule 8 in a 1-10 ruleset using negative numbers, you'd still have to do it like this:
         >>> removeRule(-3)
         '''
@@ -374,8 +374,8 @@ class InstructionsManager:
                     self.rules.reverse() # reverse the list again to bring it back to its normal state
 
         else: # if the index is positive
-            for i, rule in enumerate(self.rules): 
-                if i == index - 1: # if the index matches the natural number 
+            for i, rule in enumerate(self.rules):
+                if i == index - 1: # if the index matches the natural number
                     self.rules.remove(rule) # remove the rule
 
     def modifyInitial(self, subject, gradeLevel):
@@ -398,7 +398,7 @@ class InstructionsManager:
             ENFORCE THESE RULES
             Example prompt: generate a multiple choice quiz about math at the college level about how speakers use ultrasonic wavelengths to transmit sound throughout the air.
             Example output: Here's a multiple choice quiz about how speakers use ultrasonic wavelengths to transmit sound throughout the air as it relates to math.
-            
+
             Do you understand these rules?""")
 
     def getRulesContext(self):
@@ -406,24 +406,24 @@ class InstructionsManager:
         Gets the rules as an injection-ready formatted context string
         '''
         return f"Remember the rules:\n{self.getRules()}\n\n"
-    
+
     def getRules(self):
         '''
         Formats the rules as a string and returns them
         '''
         ruleListStr = ""
-        
+
         for dict in self.rules: # get the rule dictionaries
             # save the values
             rule = dict["Rule"]
             subRules = dict["Sub Rules"]
-            
+
             if not subRules: # if there are no subrules for the current rule
                 ruleListStr += f"1. {rule}\n"
             else: # if the current rule has one or more sub rules
                 ruleListStr += f"1. {rule}\n"
 
-                for subRule in subRules: 
+                for subRule in subRules:
                     ruleListStr += "\t" # add a tab to denote a sub-rule
                     ruleListStr += f"{subRule}\n" # add the subrule and a newline
 
@@ -433,7 +433,7 @@ class InstructionsManager:
                 {ruleListStr}
             }}
         """)
-        
+
         return resultStr
 
 class TutorGPT(ModelBase):
@@ -456,10 +456,10 @@ class TutorGPT(ModelBase):
 
     def learnMode(self, topic):
         '''
-        Sets the topic for modes learn and quiz. 
-        
+        Sets the topic for modes learn and quiz.
+
         For learn, the AI is asked if it can help the user learn about a topic.
-        
+
         For quiz, the AI is asked to create a practice quiz based on the topic.
 
         This function takes in one parameter:
@@ -490,7 +490,7 @@ class TutorGPT(ModelBase):
         elif self.mode == "quiz":
             self.prompt = dedent(f"""\
                 {self.instructionsMgr.getRulesContext()}
-                Create a {self.subject} quiz focusing on {topic} for a {self.gradeLevel} student.
+                Create a {self.subject} quiz focusing on {self.subject} and {topic} for a {self.gradeLevel} student.
                 Make the quiz 10 questions long, with four options each.
                 Return the quiz in JSON format, as a list of dictionaries, where one dictionary represents one question in the quiz.
                 Put the dictionaries into the following format:
@@ -506,6 +506,7 @@ class TutorGPT(ModelBase):
                         ]
                     }}
                 Include the correct answer in the list of options.
+                Enclose the JSON list of dictionaries in 3 backticks (```).
                 """)
 
     def excerptMode(self, excerpt):
@@ -547,9 +548,9 @@ if __name__ == "__main__":
     Rules: {
         1. Don't generate a quiz that isn't based on the subject
         2. Don't generate a quiz that's not at the grade level
-        3. Don't generate any content that isn't relevant 
+        3. Don't generate any content that isn't relevant
             a. For example, Alien Planets have nothing to do with Health. Pulleys and Levers have nothing to do with Programming
-        4. Tell the user what rule an invalid prompt violates 
+        4. Tell the user what rule an invalid prompt violates
             a. for example if the user violates rule one, say: "I'm sorry, but I am not allowed to generate any content that isn't based on your selected subject. Please change the topic or change your subject"
     }
     ENFORCE THESE RULES

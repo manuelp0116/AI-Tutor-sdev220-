@@ -4,10 +4,15 @@ import json, os, time
 from PIL import Image # Import python image library for the button images
 from ai import TutorGPT # The AI class
 from dataclasses import dataclass
+from textwrap import dedent
+from storageSolutions import * # File that runs storage logic
 
-model = TutorGPT('history', 'college', 'learn')
+model = TutorGPT('', '', 'learn')
 root = ctk.CTk() # Create the app's customtkinter window
 title = ('AI Tutor') # Title of the app
+
+subject_list = ["History", "Math", "Science", "Literature", "Business/Law"]
+gradeLevel_list = ["Elementary school", "Middle school", "Secondary school", "College/University"]
 
 # This class is used to create a new scrollable frame. Once instantiated, the program can add mesages from both
 # User and Assistant.
@@ -42,7 +47,7 @@ class scrollableFrame(ctk.CTkScrollableFrame):
                         msgbox.insert('end', chunk)
                         msgbox.update()
                         time.sleep(0.03)
-    
+
 class createRadioButtons(ctk.CTkFrame):
     def __init__(self, master, title, values):
         super().__init__(master)
@@ -54,16 +59,16 @@ class createRadioButtons(ctk.CTkFrame):
 
         self.title = ctk.CTkLabel(self, text=self.title, fg_color="gray30", corner_radius=6)
         self.title.grid(row=0, column=0, pady=(10, 0), sticky="ew")
-    
+
         for i, value in enumerate(self.values):
             radiobutton = ctk.CTkRadioButton(self, text=value, value=value, variable=self.variable)
             radiobutton.grid(row=i+1, column=0, padx=10, pady=10, sticky="w")
             self.radiobuttons.append(radiobutton)
 
     def get(self):
-        return self.variable.get() 
+        return self.variable.get()
 
-@dataclass   
+@dataclass
 class Student:
     answer = ''
     chatInput = ''
@@ -92,10 +97,10 @@ class UI:
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "images")
         self.app_icon = ctk.CTkImage(Image.open(os.path.join(image_path, "image_icon_light.png")), size=(20, 20))
         self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "CustomTkinter_logo_single.png")), size=(26, 26))
-        
+
         #####################################################################################################
         "<><><><><><><><><><><><><><><>  Create Sidebar Frame with Tabs   <><><><><><><><><><><><><><><><><>"
-        ##################################################################################################### 
+        #####################################################################################################
         self.navbarFrame = ctk.CTkFrame(window, corner_radius=0,)
         self.navbarFrame.grid(row=0, column=0, sticky="nsew")
         self.navbarFrame.grid_rowconfigure(9, weight=1)
@@ -109,12 +114,12 @@ class UI:
         #####################################################################################################
         self.studentBtn_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "add_user_dark.png")),
                                                      dark_image=Image.open(os.path.join(image_path, "add_user_light.png")), size=(20, 20))
-        
+
         self.studentBtn = ctk.CTkButton(self.navbarFrame, corner_radius=0, height=40, border_spacing=10, text="Student",
                                                       fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                                       image=self.studentBtn_image, anchor="w", command=lambda: self.navbarEvent('Student', self.studentFrame))
         self.studentBtn.grid(row=1, column=0, sticky="ew")
-        
+
         self.chatBtn_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "chat_dark.png")),
                                                  dark_image=Image.open(os.path.join(image_path, "chat_light.png")), size=(20, 20))
 
@@ -159,15 +164,45 @@ class UI:
         self.studentFrame.grid_rowconfigure(5, weight=1)
         self.studentFrame.grid_columnconfigure(1, weight=1)
 
-        self.appInfo_lbl = ctk.CTkLabel(self.studentFrame, text="Welcome to a revolutionary new learning \n experience powered by Open AI.",
-                                                  font=ctk.CTkFont(size=20, weight="bold"))
+        self.appInfo_lbl = ctk.CTkLabel(
+            self.studentFrame,
+            text="Welcome to a revolutionary new learning \n experience powered by Open AI.",
+            font=ctk.CTkFont(size=20, weight="bold"))
         self.appInfo_lbl.grid(row=2, column=1, padx=10, pady=50)
 
-        self.userNameEntry = ctk.CTkEntry(self.studentFrame, width=200, height=40, placeholder_text="Enter your first name:")
-        self.userNameEntry.grid(row=3, column=1, padx=10, pady=10)
+        self.buttonSub_frame = ctk.CTkFrame(self.studentFrame, corner_radius=0, fg_color="transparent")
+        self.buttonSub_frame.grid(row=4, column=1, padx=10, pady=10, sticky="n")
 
-        self.start_button = ctk.CTkButton(self.studentFrame, height=40, width=150, text="Start Learning", font=ctk.CTkFont(size=15, weight="bold"), command=lambda: self.startLearning())
-        self.start_button.grid(row=4, column=1, padx=10, pady=10)
+        self.intro_text = f"""\
+We're here to help you with your learning. If you need help with a subject, \
+click on "Ask AI" to go to our chat window. You can ask our AI anything! \
+Are you ready to test yourself? Our "Quiz Generator" will create a multiple choice \
+test for you on a topic of your choice.\n\nWhat would you like to do?
+        """
+        self.choose_lbl = ctk.CTkLabel(
+            self.studentFrame,
+            wraplength=500,
+            text=self.intro_text,
+            font=ctk.CTkFont(size=20))
+        self.choose_lbl.grid(row=3, column=1, padx=10, pady=10, sticky="n")
+
+        self.chooseAI_button = ctk.CTkButton(
+            self.buttonSub_frame,
+            height=40,
+            width=150,
+            text="Ask AI",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=lambda: self.navbarEvent("Chat", self.chatFrame))
+        self.chooseAI_button.grid(row=1, column=0, padx=10)
+
+        self.chooseQuiz_button = ctk.CTkButton(
+            self.buttonSub_frame,
+            height=40,
+            width=150,
+            text="Quiz Generator",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=lambda: self.navbarEvent("Quiz", self.quizFrame))
+        self.chooseQuiz_button.grid(row=1, column=1, padx=10)
 
         #####################################################################################################
         "<><><><><><><><><><><><><><><><><><>   Create Quiz Frame   <><><><><><><><><><><><><><><><><><><><>"
@@ -176,15 +211,73 @@ class UI:
         self.quizFrame.grid_rowconfigure(0, weight=1)
         self.quizFrame.grid_columnconfigure(1, weight=1)
         self.quizFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
-       
-        self.quiz_input = ctk.CTkEntry(self.quizFrame, placeholder_text=f"{self.placeholder}", fg_color="transparent")
-        self.quiz_input.grid(row=1, column=1, padx=10, pady=10, sticky='nsew')
-        self.createQuiz_btn = ctk.CTkButton(self.quizFrame, text="Create Quiz", font=ctk.CTkFont(size=15, weight="bold"), command=lambda: self.createQuiz())
-        self.createQuiz_btn.grid(row=1, column=2, padx=10, pady=10, sticky='nsew')
+
+        self.quizFrame_header = ctk.CTkLabel(
+            self.quizFrame,
+            text="Quiz Generator",
+            font=ctk.CTkFont(size=20, weight="bold"))
+        self.quizFrame_header.grid(
+            row=0, column=1, columnspan=2, padx=10, pady=10, sticky="n")
+
+        self.quizFrame_subheader = ctk.CTkLabel(
+            self.quizFrame,
+            text=f"Let's test your knowledge!\n\nPlease select a subject and a study level, then enter a topic.The quiz will be 10 questions long and multiple choice. Click \"Create Quiz\" when you're ready to start.",
+            font=ctk.CTkFont(size=20),
+            wraplength=500)
+        self.quizFrame_subheader.grid(row=1, column=1, columnspan=2, padx=10, pady=10)
+
+        self.quizFrame_subframe = ctk.CTkFrame(self.quizFrame, corner_radius=0, fg_color="transparent")
+        self.quizFrame_subframe.grid(row=3, column=1, padx=10, pady=10)
+
+        self.subject_dropdown = ctk.CTkOptionMenu(
+            self.quizFrame_subframe,
+            height=40,
+            width=200,
+            values=subject_list,
+            variable=ctk.StringVar(),
+            font=(ctk.CTkFont(size=15)))
+        self.subject_dropdown.set("Choose a subject:")
+        self.subject_dropdown.grid(row=0, column=0, padx=10, pady=10)
+
+        self.gradeLevel_dropdown = ctk.CTkOptionMenu(
+            self.quizFrame_subframe,
+            height=40,
+            width=200,
+            values=gradeLevel_list,
+            variable=ctk.StringVar(),
+            font=ctk.CTkFont(size=15))
+        self.gradeLevel_dropdown.set("Choose a study level:")
+        self.gradeLevel_dropdown.grid(row=0, column=1, padx=10, pady=10)
+
+        self.topic_entry = ctk.CTkEntry(
+            self.quizFrame,
+            height=40,
+            width=405,
+            font=ctk.CTkFont(size=15),
+            placeholder_text="Enter your topic here",
+            fg_color="transparent")
+        self.topic_entry.grid(row=4, column=1, padx=10, pady=10)
+
+        self.createQuiz_btn = ctk.CTkButton(
+            self.quizFrame,
+            height=50,
+            width=200,
+            text="Create Quiz",
+            font=ctk.CTkFont(size=20, weight="bold"),
+            command=lambda: self.getAIQuiz(model))
+        self.createQuiz_btn.grid(row=5, column=1, padx=10, pady=60)
+
+        self.wait_label = ctk.CTkLabel(
+            self.quizFrame,
+            font=ctk.CTkFont(size=15),
+            wraplength=550,
+            text="(It may take a moment to generate your quiz. Please be patient.)")
+        self.wait_label.grid(row=2, column=1, padx=10, pady=10)
 
         #Initialize the default frame
         self.currentFrame = self.studentFrame
-    
+        self.studentFrame.tkraise()
+
     def checkConnection(self, result):
         if isinstance(result, bool):
             while result == True:
@@ -196,7 +289,80 @@ class UI:
             self.askAI_btn.configure(state='normal')
             self.createQuiz_btn.configure(state='disabled')
 
-    def createQuiz(self):
+    def getAIQuiz(self, model: TutorGPT):
+        """
+        Sends a prompt to AI and parses the response.
+        If JSON code block is found, raises the quizContainer_frame and sends it the quiz data,
+        if not, raises an error frame for the user
+        """
+        # Reset model settings
+        model.setMode("quiz")
+        model.setSubject(self.subject_dropdown.get())
+        model.setGradeLevel(self.gradeLevel_dropdown.get())
+        model.quizMode(self.topic_entry.get())
+
+        # Call the AI
+        response = model.complete(stream=True)
+
+        # Parsing AI response
+        response_raw = ""
+        for chunk in response:
+            response_raw += chunk
+        response_code = response_raw.strip().split("```")
+
+        # Raise quiz frame if quiz was generated and sends quiz data list to storage
+        if len(response_code) == 3:
+            quiz_data = dedent(response_code[1].replace("\n", ""))
+
+            # quiz_data =''
+            # for quiz_chunk in response_code[1]:
+            #     quiz_data += quiz_chunk.strip()
+            self.createQuiz(quiz_data)
+            print("quiz sent to the creation function")
+            storagesolutions.saveQuiz(self, subject=self.subject_dropdown.get(), grade=self.gradeLevel_dropdown.get(), response=quiz_data)
+            print("quiz sent to storage")
+
+        # Raises inner error frame if no quiz
+        else:
+            self.raise_error(response_code[0])
+
+    def raise_error(self, error):
+        """
+        Raises a small frame inside quizFrame and displays AI's error message.
+        Destroys itself (but nothing else, don't worry) when closed
+        """
+        self.errorFrame = ctk.CTkFrame(
+            self.quizFrame,
+            border_width=1,
+            fg_color="white")
+        self.errorFrame.grid(row=1, column=1, rowspan=3)
+
+        self.errorLabel = ctk.CTkLabel(
+            self.errorFrame,
+            font=ctk.CTkFont(size=15, weight="bold"),
+            justify="left",
+            text=f"Uh Oh! Something went wrong.")
+        self.errorLabel.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+        self.error_subLabel = ctk.CTkLabel(
+            self.errorFrame,
+            font=ctk.CTkFont(size=15),
+            wraplength=500,
+            justify="left",
+            text=f"The AI says:\n\n{error}\n\nPlease close this message and try again.")
+        self.error_subLabel.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+
+        self.error_x = ctk.CTkButton(
+            self.errorFrame,
+            width=5,
+            fg_color="light grey",
+            hover_color="light blue",
+            text_color="grey50",
+            text="x",
+            command=self.errorFrame.destroy)
+        self.error_x.grid(row=0, column=1, padx=1, pady=2, sticky="ne")
+
+    def createQuiz(self, quiz_data):
         self.quizContainerFrame = ctk.CTkFrame(self.quizFrame, corner_radius=0, fg_color="transparent")
         self.quizContainerFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         self.quizContainer = ctk.CTkFrame(self.quizContainerFrame, corner_radius=0, fg_color="transparent")
@@ -222,7 +388,7 @@ class UI:
             while self.quiz_input.get() != '':
                 self.createQuiz_btn.configure(state='normal')
             self.createQuiz_btn.configure(state='disabled')
-    
+
     # Get the response from the OpenAI API and display it in the AI response in the respective window
     def create_request(self):
         if self.checkFields() and self.checkConnection(result=model.complete()):
@@ -262,7 +428,7 @@ class UI:
         self.studentBtn.configure(fg_color=("gray75", "gray75") if name == "Student" else "transparent")
         # show selected frame
         self.switchFrame(frame)
-         
+
 
     '<><><><><><><><><><><> These functions set variables <><><><><><><><><><><> '
     def getCurrentDropdowns(self, dropdown):
@@ -280,7 +446,7 @@ class UI:
 
     def change_appearance_mode_event(self, new_appearance_mode):
         ctk.set_appearance_mode(new_appearance_mode)
-    
+
 class Quiz(UI):
     def __init__(self, quiz_data):
         super().__init__(self)
@@ -306,7 +472,7 @@ class Quiz(UI):
 
     def display_question(self):
         self.create_widgets()
-    
+
     def create_widgets(self):
         self.mapQuizData()
         self.quiz_options = self.quiz_data[self.question_index]['options']
@@ -355,7 +521,7 @@ class Quiz(UI):
         self.nextQuestion()
 
     #psuedocode:
-    # if mode == expand: 
+    # if mode == expand:
         #self.placeholder=('Please provide me with the excerpt from your textbook')
 
 
@@ -378,10 +544,10 @@ class Quiz(UI):
 MIN_WIN_SIZE = (600, 480)  # Min window resolution (width/height)
 MAX_WIN_SIZE = (1440, 1280)  # Max window resolution (width/height)
 
-# I used the '*' character below to unpack the dimensions from the tuples 
+# I used the '*' character below to unpack the dimensions from the tuples
 # when passing them to the minsize and maxsize methods.
 
-root.minsize(*MIN_WIN_SIZE) 
+root.minsize(*MIN_WIN_SIZE)
 root.maxsize(*MAX_WIN_SIZE)
 
 def_window_width = 800  # Default app width on app launch (width/height)
