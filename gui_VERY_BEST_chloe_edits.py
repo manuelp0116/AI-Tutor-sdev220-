@@ -242,7 +242,6 @@ class UI:
         response_code = response_raw.strip().split("```")
         if len(response_code) == 3:
             print(response_code[1])
-            # self.create_quiz_data(response_code[1])
         else:
             print(response_code[0])
 
