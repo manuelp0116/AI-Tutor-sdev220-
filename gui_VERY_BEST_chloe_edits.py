@@ -209,7 +209,7 @@ class UI:
         self.quiz_input = ctk.CTkEntry(self.quizFrame, height=40, width=405, font=ctk.CTkFont(size=15), placeholder_text="Enter a topic here", fg_color="transparent")
         self.quiz_input.grid(row=3, column=1, padx=10, pady=10)
 
-        self.createQuiz_btn = ctk.CTkButton(self.quizFrame, height=50, width=200, text="Create Quiz", font=ctk.CTkFont(size=20, weight="bold"), command=lambda: self.createQuiz())
+        self.createQuiz_btn = ctk.CTkButton(self.quizFrame, height=50, width=200, text="Create Quiz", font=ctk.CTkFont(size=20, weight="bold"), command=lambda: self.getAIQuiz(model))
         self.createQuiz_btn.grid(row=4, column=1, padx=10, pady=90)
 
         #Initialize the default frame
@@ -226,6 +226,13 @@ class UI:
             self.connectionStatus=('Status: Connected')
             self.askAI_btn.configure(state='normal')
             self.createQuiz_btn.configure(state='disabled')
+
+    def getAIQuiz(self, model: TutorGPT):
+        model.setMode("quiz")
+        model.setSubject(self.subject_dropdown.get())
+        model.setGradeLevel(self.gradeLevel_dropdown.get())
+        model.quizMode(self.topic_entry.get())
+        response = model.complete(stream=False)
 
     def createQuiz(self):
         self.quizContainerFrame = ctk.CTkFrame(self.quizFrame, corner_radius=0, fg_color="transparent")

@@ -42,9 +42,11 @@ class storagesolutions:
         #will save output from AI in a json file, parsing could be necesary, naming conventions for the files are up to change.
         file_name = str(subject) + "quiz" + str(grade) + str(datetime.date.today) #file name, could add datetime module to name the files in a more personalized manner
         file_path = file_name + ".json"
+        save_path = 'quizSTG'
         with open(file_path, 'w') as fp:
-            json.dump(response,fp)
+            json.dump(response,fp)    
         fp.close
+        os.path.join('quizSTG', file_path)
         
     def saveChat(self, chat, subject, grade):
         #
@@ -54,6 +56,7 @@ class storagesolutions:
             fixChat = chat.split() #neeed the necesary parameter to split and parse the chat
             fp.write(fixChat)
         fp.close
+        os.path.join('chatSTG', file_path)
         
     def folderNav(self):
         '''
@@ -65,7 +68,8 @@ class storagesolutions:
                 name = str(entry)
                 nameSplit = name.split('.')#split the files and creates the list 
                 name_list = [nameSplit]
-                print(name_list) #print just the file names.
                 return entry
+            print(name_list) #print just the file names.
+                
         
     

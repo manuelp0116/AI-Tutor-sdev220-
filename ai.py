@@ -100,9 +100,11 @@ class ModelBase:
         else:
             completion = self.api.create(model="gpt-3.5-turbo", messages=self.chat["messages"], temperature=temperature, top_p=top_p)
                     
-            self.logCompletion(completion) #Add the AI's response to message history
+            # self.logCompletion(completion) #Add the AI's response to message history
 
-            return completion["choices"][0]["content"]
+            self.history.append({"role": "assistant", "content": completion["choices"][0]["message"]["content"]})
+
+            return completion["choices"][0]["message"]["content"]
 
     #----------------------------- Chat History Management -----------------------------#
 
@@ -479,13 +481,32 @@ class TutorGPT(ModelBase):
         '''
         Compiles the quiz prompt for the AI
         '''
-
+        self.topic = topic
+        
         if self.mode == "expand":
             print("Add topic reqiures a topic name, not a topic description. Use excerptMode()")
         elif self.mode == "learn":
             print("Excerpt mode is for excerpts taken from textbooks or other source material that the student needs help understanding, not for learning about a topic. Use learnMode()")
         elif self.mode == "quiz":
-            self.prompt = f"{self.instructionsMgr.getRulesContext()}Question: Can you create a practice quiz about {topic} with{self.quizConfiguration[0]} Multiple Choice questions, with{self.quizConfiguration[1]} Multiple Answer questions, and with{self.quizConfiguration[2]} Short Answer questions? Give the response in JSON format as a list of dictionaries, with keys for question, choices, answer. Put the choices key in the following format: {{A: <text for choice A>, B: <text for choice B>, C: <text for choice C>, D: <text for choice D>}}, create the quiz for a {self.gradeLevel} student about {self.subject}. In particular, focus on {topic}. Make the quiz 10 questions long with 4 choices each." # Change the prompt to fit the user's requirements
+            self.prompt = dedent(f"""\
+                {self.instructionsMgr.getRulesContext()}
+                Create a {self.subject} quiz focusing on {topic} for a {self.gradeLevel} student.
+                Make the quiz 10 questions long, with four options each.
+                Return the quiz in JSON format, as a list of dictionaries, where one dictionary represents one question in the quiz.
+                Put the dictionaries into the following format:
+                    {{
+                        "type": "Multiple Choice",
+                        "question": "text for the question goes here",
+                        "answer": "text for the correct answer goes here",
+                        "options": [
+                                    "text for option A",
+                                    "text for option B",
+                                    "text for option C",
+                                    "text for option D"
+                        ]
+                    }}
+                Include the correct answer in the list of options.
+                """)
 
     def excerptMode(self, excerpt):
         '''
