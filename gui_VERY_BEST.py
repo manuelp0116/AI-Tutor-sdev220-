@@ -4,8 +4,10 @@ import json, os, time
 from PIL import Image # Import python image library for the button images
 from ai import TutorGPT # The AI class
 from dataclasses import dataclass
+from textwrap import dedent
+from storageSolutions import * # File that runs storage logic
 
-model = TutorGPT('history', 'college', 'learn')
+model = TutorGPT('', '', 'learn')
 root = ctk.CTk() # Create the app's customtkinter window
 title = ('AI Tutor') # Title of the app
 
@@ -308,10 +310,17 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             response_raw += chunk
         response_code = response_raw.strip().split("```")
 
-        # Raise quiz frame if quiz was generated
+        # Raise quiz frame if quiz was generated and sends quiz data list to storage
         if len(response_code) == 3:
-            print(response_code[1])
-            self.createQuiz(response_code[1])
+            quiz_data = dedent(response_code[1].replace("\n", ""))
+
+            # quiz_data =''
+            # for quiz_chunk in response_code[1]:
+            #     quiz_data += quiz_chunk.strip()
+            self.createQuiz(quiz_data)
+            print("quiz sent to the creation function")
+            storagesolutions.saveQuiz(self, subject=self.subject_dropdown.get(), grade=self.gradeLevel_dropdown.get(), response=quiz_data)
+            print("quiz sent to storage")
 
         # Raises inner error frame if no quiz
         else:
