@@ -6,7 +6,7 @@ from typing import Any, overload # function overloading
 from textwrap import dedent # To make docstrings look nicer in the
 import inspect
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 def retryConnection(max_retries):
     def decorator(function):
@@ -40,7 +40,7 @@ class ModelBase:
         self.history = [] # This is the stored chat history.
         self.api = openai.ChatCompletion()
 
-        # self.chats = { # initializes the chats with a system prompt and a starter prompt
+        # self.chat = { # initializes the chat with a system prompt and a starter prompt
         #     "chat": {
         #         "messages": [
         #             {"role": "system", "content": systemPrompt},
@@ -98,13 +98,8 @@ class ModelBase:
             self.logCompletion(collectedMessages) #Add the AI's response to message history
 
         else:
-<<<<<<< HEAD
-            completion = self.api.create(model="gpt-3.5-turbo", messages=self.chats["messages"], temperature=temperature, top_p=top_p)
-
-=======
             completion = self.api.create(model="gpt-3.5-turbo", messages=self.chat["messages"], temperature=temperature, top_p=top_p)
-                    
->>>>>>> c9b575182f621fa2e7e9613299b1bb4c94f69478
+
             self.logCompletion(completion) #Add the AI's response to message history
 
             return completion["choices"][0]["content"]
@@ -440,7 +435,7 @@ class InstructionsManager:
         return resultStr
 
 class TutorGPT(ModelBase):
-    def __init__(self, subject, gradeLevel, topic, mode="learn"):
+    def __init__(self, subject, gradeLevel, mode="learn"):
         prompt = f"Hello, I am a student coming to you for help. I am in {gradeLevel} and I'm studying {subject} today"
         systemPrompt = f"You are a professional {gradeLevel} instructor who specializes in teaching in the {subject} area of study"
         self.instructionsMgr = InstructionsManager(subject, gradeLevel)
@@ -448,11 +443,7 @@ class TutorGPT(ModelBase):
         self.mode = mode
         self.subject = subject
         self.gradeLevel = gradeLevel
-<<<<<<< HEAD
-        self.topic = topic
-=======
         self.topic = ""
->>>>>>> c9b575182f621fa2e7e9613299b1bb4c94f69478
         self.quizConfiguration = ["", "out", "out"]
 
         super().__init__(prompt, systemPrompt)
@@ -484,7 +475,7 @@ class TutorGPT(ModelBase):
             else:
                 print(f"Mode {self.mode} not compatible with learnMode()")
 
-    def quizMode(self):
+    def quizMode(self, topic):
         '''
         Compiles the quiz prompt for the AI
         '''
@@ -496,7 +487,7 @@ class TutorGPT(ModelBase):
         elif self.mode == "quiz":
             self.prompt = dedent(f"""\
                 {self.instructionsMgr.getRulesContext()}
-                Create a {self.subject} quiz focusing on {self.topic} for a {self.gradeLevel} student.
+                Create a {self.subject} quiz focusing on {self.subject} and {topic} for a {self.gradeLevel} student.
                 Make the quiz 10 questions long, with four options each.
                 Return the quiz in JSON format, as a list of dictionaries, where one dictionary represents one question in the quiz.
                 Put the dictionaries into the following format:
@@ -511,7 +502,8 @@ class TutorGPT(ModelBase):
                                     "text for option D"
                         ]
                     }}
-                Put the correct answer in the list of options.
+                Include the correct answer in the list of options.
+                Enclose the JSON list of dictionaries in 3 backticks (```).
                 """)
 
     def excerptMode(self, excerpt):
