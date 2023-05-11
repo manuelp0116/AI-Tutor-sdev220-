@@ -4,6 +4,8 @@ import json, os, time
 from PIL import Image # Import python image library for the button images
 from ai import TutorGPT # The AI class
 from dataclasses import dataclass
+from textwrap import dedent
+
 
 model = TutorGPT('history', 'college', 'learn')
 root = ctk.CTk() # Create the app's customtkinter window
@@ -166,11 +168,8 @@ class UI:
                                                   font=ctk.CTkFont(size=20, weight="bold"))
         self.appInfo_lbl.grid(row=2, column=1, padx=10, pady=50)
 
-        self.userNameEntry = ctk.CTkEntry(self.studentFrame, width=200, height=40, placeholder_text="Enter your first name:", textvariable=ctk.StringVar())
-        self.userNameEntry.grid(row=3, column=1, padx=10, pady=20)
-
         self.buttonSub_frame = ctk.CTkFrame(self.studentFrame, corner_radius=0, fg_color="transparent")
-        self.buttonSub_frame.grid(row=5, column=1, padx=10, pady=10, sticky='n')
+        self.buttonSub_frame.grid(row=3, column=1, padx=10, pady=10, sticky='n')
 
         self.choose_lbl = ctk.CTkLabel(self.buttonSub_frame, text="What would you like to do?", font=ctk.CTkFont(size=20))
         self.choose_lbl.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
@@ -192,8 +191,8 @@ class UI:
         self.quiz_header = ctk.CTkLabel(self.quizFrame, text="Quiz Generator", font=ctk.CTkFont(size=20, weight="bold"))
         self.quiz_header.grid(row=0, column=1, columnspan=2, padx=10, pady=10, sticky='n')
 
-        self.quizSub_header = ctk.CTkLabel(self.quizFrame, text=f"Alright, let's test your knowledge!\n\nPlease select a subject and a study level, then enter a topic. The quiz will be 10 questions long and multiple choice. Click \"Create Quiz\" when you're ready to start.", font=ctk.CTkFont(size=20), wraplength=500)
-        self.quizSub_header.grid(row=1, column=1, columnspan=2, padx=10, pady=10)
+        self.quiz_subheader = ctk.CTkLabel(self.quizFrame, text=f"Alright, let's test your knowledge!\n\nPlease select a subject and a study level, then enter a topic. The quiz will be 10 questions long and multiple choice. Click \"Create Quiz\" when you're ready to start.", font=ctk.CTkFont(size=20), wraplength=500)
+        self.quiz_subheader.grid(row=1, column=1, columnspan=2, padx=10, pady=10)
 
         self.quizOptions_frame = ctk.CTkFrame(self.quizFrame, corner_radius=0, fg_color="transparent")
         self.quizOptions_frame.grid(row=2, column=1, padx=10, pady=10)
@@ -206,8 +205,8 @@ class UI:
         self.gradeLevel_dropdown.set("Choose a study level:")
         self.gradeLevel_dropdown.grid(row=0, column=1, padx=10, pady=10)
 
-        self.quiz_input = ctk.CTkEntry(self.quizFrame, height=40, width=405, font=ctk.CTkFont(size=15), placeholder_text="Enter a topic here", fg_color="transparent")
-        self.quiz_input.grid(row=3, column=1, padx=10, pady=10)
+        self.topic_entry = ctk.CTkEntry(self.quizFrame, height=40, width=405, font=ctk.CTkFont(size=15), placeholder_text="Enter a topic here", fg_color="transparent")
+        self.topic_entry.grid(row=3, column=1, padx=10, pady=10)
 
         self.createQuiz_btn = ctk.CTkButton(self.quizFrame, height=50, width=200, text="Create Quiz", font=ctk.CTkFont(size=20, weight="bold"), command=lambda: self.createQuiz())
         self.createQuiz_btn.grid(row=4, column=1, padx=10, pady=90)
@@ -226,6 +225,23 @@ class UI:
             self.connectionStatus=('Status: Connected')
             self.askAI_btn.configure(state='normal')
             self.createQuiz_btn.configure(state='disabled')
+
+
+#------------------------still a work in progress------------#
+    def getAIQuiz(self, model: TutorGPT):
+        model.setMode("quiz")
+        model.setSubject(self.subject_dropdown.get())
+        model.setGradeLevel(self.gradeLevel_dropdown.get())
+        model.quizMode(self.topic_entry.get())
+        response = model.complete(stream=False)
+
+        response_raw = ''
+        for chunk in response:
+            response_raw += chunk
+
+        response_code = dedent(response_raw)
+        print(response_code)
+
 
     def createQuiz(self):
         self.quizContainerFrame = ctk.CTkFrame(self.quizFrame, corner_radius=0, fg_color="transparent")
@@ -250,7 +266,7 @@ class UI:
                 self.askAI_btn.configure(state='normal')
             self.askAI_btn.configure(state='disabled')
         elif self.currentTab == 'Quiz':
-            while self.quiz_input.get() != '':
+            while self.topic_entry.get() != '':
                 self.createQuiz_btn.configure(state='normal')
             self.createQuiz_btn.configure(state='disabled')
 
@@ -287,7 +303,7 @@ class UI:
         self.quizBtn.configure(fg_color=("gray75", "gray75") if name == "Chat" else "transparent")
         self.studentBtn.configure(fg_color=("gray75", "gray75") if name == "Student" else "transparent")
         # show selected frame
-        self.switchFrame(frame)
+        frame.tkraise()
 
 
     '<><><><><><><><><><><> These functions set variables <><><><><><><><><><><> '
