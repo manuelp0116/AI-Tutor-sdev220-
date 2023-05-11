@@ -14,6 +14,7 @@ title = ('AI Tutor') # Title of the app
 subject_list = ["History", "Math", "Geography", "Biology", "Chemistry", "Physics"]
 gradeLevel_list = ["Elementary school", "Middle school", "Secondary school", "College/University"]
 
+
 # This class is used to create a new scrollable frame. Once instantiated, the program can add mesages from both
 # User and Assistant.
 class scrollableFrame(ctk.CTkScrollableFrame):
@@ -89,7 +90,6 @@ class UI:
         self.msg = ''
         self.name = ''
         self.placeholder=''
-
 
         #####################################################################################################
         "<><><><><><><><><><><><><><><><><><><><>  Load Images   <><><><><><><><><><><><><><><><><><><><><>"
