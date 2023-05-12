@@ -5,8 +5,11 @@ from openai.error import APIConnectionError # Connection Error Handling
 from typing import Any, overload # function overloading
 from textwrap import dedent # To make docstrings look nicer in the
 import inspect
+from storageSolutions import StorageSolutions
 
 openai.api_key = "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"
+
+storage = StorageSolutions()
 
 def retryConnection(max_retries):
     def decorator(function):
@@ -277,6 +280,8 @@ class ModelBase:
         '''
         clears the chat history so the user can start from scratch conversing with the AI
         '''
+        storage.saveChat(self.chat["message"])
+
         self.chat["messages"].clear() #Clear the list
 
         self.chat = { #Re-add the system prompt (this should never be deleted)
@@ -319,6 +324,20 @@ class ModelBase:
         sets the user prompt
         '''
         self.prompt = prompt
+
+    # def getChatHistory(self, index):
+    #     MAX_INDEX = len(self.chat["messages"]) # the amount of messages in the chat - a constant variable
+    #     RESTRICTED_NUMS = [0, 1, (MAX_INDEX * -1) - 2, (MAX_INDEX * -1) - 1] # These are the indexes of the AI instructions that shouldn't be deleted - a constant variable
+
+    #     for i, message in enumerate(self.chat["messages"]):
+    #         if i == index:
+    #             return (self.chat["messages"][i]["content"])
+
+    # def getRecentHistory(self):
+    #     MAX_INDEX = len(self.chat["messages"]) # the amount of messages in the chat - a constant variable
+    #     RESTRICTED_NUMS = [0, 1, (MAX_INDEX * -1) - 2, (MAX_INDEX * -1) - 1] # These are the indexes of the AI instructions that shouldn't be deleted - a constant variable
+
+    #     return self.chat["messages"][-1]["content"]
 
 class InstructionsManager:
     '''

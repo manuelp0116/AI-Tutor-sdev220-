@@ -30,13 +30,20 @@ class StorageSolutions:
         #use this function at the start of the app to create and get folders ready, it will create the necessary folders for the stuff that needs to be saved, and will check for those same folders in the future
         if os.path.exists("quizSTG") and os.path.exists("chatSTG"):
             print("folder exist")
-
-
         else:
             pathList = ['quizSTG', 'chatSTG'] #names of folders on list to iterate through them
             for i in pathList:
                 path = os.path.join(i)
                 os.mkdir(path)
+        
+        with os.scandir('quizSTG') as entries:
+            for entry in entries:
+                name = str(entry)
+                name_list = [name]
+                
+                
+                
+        
 
     def saveQuiz(self, subject, grade, response):
         #will save output from AI in a json file, parsing could be necesary, naming conventions for the files are up to change.
@@ -48,15 +55,14 @@ class StorageSolutions:
             os.path.join('quizSTG', file_path)
         fp.close
         
-    def saveChat(self, chat, subject, grade):
+    def saveChat(self, chat):
         #
-        file_name = 'chat' + str(subject) + str(grade) + str(datetime.date.today)
+        file_name = 'temporary chat'
         file_path = file_name + ".txt"
         with open(file_path, "w") as fp:
-            fixChat = chat.split() #neeed the necesary parameter to split and parse the chat
-            fp.write(fixChat)
+            fp.write(chat)
+            os.path.join('chatSTG', file_path)
         fp.close
-        os.path.join('chatSTG', file_path)
         
     def folderNav(self):
         '''
@@ -93,6 +99,6 @@ class StorageSolutions:
                     with open(path_file, 'r') as fp:
                         quizfile = json.load(fp)
                         fp.close()
-                        return quizfile         
+                        return quizfile      
         
     

@@ -5,7 +5,7 @@ from PIL import Image # Import python image library for the button images
 from ai import TutorGPT # The AI class
 from dataclasses import dataclass
 from textwrap import dedent
-import storageSolutions as storageManager
+from storageSolutions import StorageSolutions
 
 # File that runs storage logic
 
@@ -15,7 +15,17 @@ def get_generator():
     for chunk in response:
         yield chunk
 
-model = TutorGPT(subject=selectedSubject, gradeLevel=selectedGradeLevel)
+def getSubject():
+
+    return subject
+
+def getGrade():
+
+    return grade
+
+
+model = TutorGPT(subject=getSubject(), gradeLevel=getGrade())
+stgsol = StorageSolutions()
 root = ctk.CTk() # Create the app's customtkinter window
 title = ('AI Tutor') # Title of the app
 
@@ -65,7 +75,8 @@ class scrollableFrame(ctk.CTkScrollableFrame):
                         time.sleep(0.03)
                 msgbox.configure(state='disabled')
                 self.req_height=0
-                storageManager.saveChat(subject=selectedSubject, grade=selectedGradeLevel, )
+
+                stgsol.saveChat(subject=selectedSubject, grade=selectedGradeLevel, chat=self.ai_msg)
 
 
 # This class is used to create the radiobuttons and set the current quiz question as the title.
@@ -190,9 +201,9 @@ class UI:
         self.chatSettingsFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         self.chat_dropdown_heading_lbl = ctk.CTkLabel(self.chatSettingsFrame, text="Choose your subject \n and study level below:")
         self.chat_dropdown_heading_lbl.grid(row=1, column=1, padx=20, pady=20, sticky="ew")
-        self.chat_subjectDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Math", "History", "Geography", "Health", "Science"])
+        self.chat_subjectDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Math", "History", "Geography", "Health", "Science"]variable=selectedChatSubjectLevel, command=lambda: self.setSubjectLevel('chat'))
         self.chat_subjectDropdown.grid(row=2, column=1, padx=20, pady=10)
-        self.chat_gradeLevelDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Elementary", "Middle", "High", "College"])
+        self.chat_gradeLevelDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Elementary", "Middle", "High", "College"],variable=selectedChatGradeLevel, command=lambda: self.setGradeLevel('chat'))
         self.chat_gradeLevelDropdown.grid(row=3, column=1, padx=20, pady=10)
         self.chatSettingsFrame.grid_forget()
 
@@ -202,7 +213,7 @@ class UI:
         self.chatSettingsBtn.grid(row=0, column=0, padx=5, pady=5, sticky='nw')
         self.chatSettingsFrame.grid_forget()  # remove chat settings frame
 
-        self.modeDropdown = ctk.CTkOptionMenu(self.chatFrameWidgets, width=15, values=["Learn", "Expand"], command=self.button_callback, variable=self.selectedMode)
+        self.modeDropdown = ctk.CTkOptionMenu(self.chatFrameWidgets, width=15, values=["Learn", "Expand"], command=self.button_callback('mode'), variable=self.selectedMode)
         self.modeDropdown.grid(row=2, column=0, padx=10, pady=10, sticky="s")
         # Create question input field and add widgets into the chatFrame
         self.chat_input = ctk.CTkEntry(self.chatFrameWidgets, placeholder_text=f"{self.placeholder}", fg_color="transparent")
@@ -304,7 +315,8 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             height=40,
             width=200,
             values=subject_list,
-            variable=ctk.StringVar(),
+            variable=selectedQuizSubjectLevel, 
+            command=lambda: self.setSubjectLevel('quiz'),
             font=(ctk.CTkFont(size=15)))
         self.subject_dropdown.set("Choose a subject:")
         self.subject_dropdown.grid(row=0, column=0, padx=10, pady=10)
@@ -314,7 +326,8 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             height=40,
             width=200,
             values=gradeLevel_list,
-            variable=ctk.StringVar(),
+            variable=selectedQuizGradeLevel, 
+            command=lambda: self.setGradeLevel('quiz')
             font=ctk.CTkFont(size=15))
         self.gradeLevel_dropdown.set("Choose a study level:")
         self.gradeLevel_dropdown.grid(row=0, column=1, padx=10, pady=10)
@@ -418,7 +431,7 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
 
             self.createQuiz(self.quiz_data)
             print("quiz sent to the creation function") # testing purposes
-            StorageSolutions.saveQuiz(subject=self.subject_dropdown.get(), grade=self.gradeLevel_dropdown.get(), response=self.quiz_data)
+            stgsol.saveQuiz(self, subject=self.subject_dropdown.get(), grade=self.gradeLevel_dropdown.get(), response=self.quiz_data)
             print("quiz sent to storage") # testing purposes
 
         # Raises inner error frame if no quiz found
@@ -524,17 +537,36 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
 
     '<><><><><><><><><><><> These functions set variables <><><><><><><><><><><> '
 
-    def button_callback(self, mode, value):
+    def setSubjectLevel(self, panel):
+        if panel == 'chat':
+            # Set quiz subjectlevel
+        elif panel == 'quiz':
+            # Set quiz subjectlevel
+
+    def setGradeLevel(self, panel):
+        if panel == 'chat':
+            # Set chat gradelevel
+        elif panel == 'quiz':
+            # Set quiz gradelevel
+
+    def modeManager(self, mode, value):
         if mode == 'Expand':
-            model.excerptMode(value)
+            self.chat_command = self.setExcerpt(excerpt=value)
+            model.setMode(mode)
         elif mode == 'Learn':
-            model.learnMode(value)
-        
+            self.chat_command = self.learnMode()
+            model.setMode(mode)
+
     def setMode(self, mode):
         model.setMode(mode)
 
     def setExcerpt(self, excerpt):
         model.excerptMode(excerpt)
+
+    def setLearnMode(self, topic):
+        model.learnMode(topic=topic)
+        
+
 
     def change_appearance_mode_event(self, new_appearance_mode):
         ctk.set_appearance_mode(new_appearance_mode)
