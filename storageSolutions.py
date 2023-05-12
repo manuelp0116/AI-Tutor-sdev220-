@@ -44,9 +44,9 @@ class storagesolutions:
         file_path = file_name + ".json"
         save_path = 'quizSTG'
         with open(file_path, 'w') as fp:
-            json.dump(response,fp)    
+            json.dump(response,fp)
+            os.path.join('quizSTG', file_path)
         fp.close
-        os.path.join('quizSTG', file_path)
         
     def saveChat(self, chat, subject, grade):
         #
@@ -71,5 +71,28 @@ class storagesolutions:
                 return entry
             print(name_list) #print just the file names.
                 
+    def getQuiz(self, userInput):
+        '''
+        this should get a json file and save it in a varible to be used by chloes function to create the quiz.
+        '''
+        path_file = userInput + ".json"
+        with os.scandir('quizSTG') as entries: #scan directory
+            for entry in entries:
+                if entry == path_file: #checks for path file 
+                    with open(path_file, 'r') as fp: #open and reads json 
+                      quizFile =   json.load(fp)
+                      fp.close()
+                      return quizFile 
+    
+    
+    def getChat(self, userInput):
+        path_file = userInput + '' # Havent decide what kind of file will chat be 
+        with os.scandir('chatSTG') as entries:
+            for entry in entries:
+                if entry == path_file:
+                    with open(path_file, 'r') as fp:
+                        quizfile = json.load(fp)
+                        fp.close()
+                        return quizfile         
         
     
