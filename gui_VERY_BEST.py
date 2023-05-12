@@ -10,10 +10,8 @@ from storageSolutions import * # File that runs storage logic
 model = TutorGPT('', '', 'learn')
 root = ctk.CTk() # Create the app's customtkinter window
 title = ('AI Tutor') # Title of the app
-
 subject_list = ["History", "Math", "Science", "Literature", "Business/Law"]
 gradeLevel_list = ["Elementary school", "Middle school", "Secondary school", "College/University"]
-
 # This class is used to create a new scrollable frame. Once instantiated, the program can add mesages from both
 # User and Assistant.
 class scrollableFrame(ctk.CTkScrollableFrame):

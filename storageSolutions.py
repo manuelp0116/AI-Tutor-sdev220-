@@ -1,7 +1,7 @@
 import openai
 import datetime
 import os
-
+import customtkinter as ctk
 import json
 
 # openai.api_key = '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'
@@ -68,8 +68,8 @@ class storagesolutions:
                 name = str(entry)
                 nameSplit = name.split('.')#split the files and creates the list
                 name_list = [nameSplit]
-                return entry
-            print(name_list) #print just the file names.
+                return name_list
+            
                 
     def getQuiz(self, userInput):
         '''
