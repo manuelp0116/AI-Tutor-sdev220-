@@ -310,19 +310,15 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             response_raw += chunk
         response_code = response_raw.strip().split("```")
 
-        # Raise quiz frame if quiz was generated and sends quiz data list to storage
+        # Raise quiz frame if quiz was generated, sends quiz data list to quiz creation function and storage
         if len(response_code) == 3:
-            quiz_data = dedent(response_code[1].replace("\n", ""))
-
-            # quiz_data =''
-            # for quiz_chunk in response_code[1]:
-            #     quiz_data += quiz_chunk.strip()
+            quiz_data = response_code[1].replace("\n", "").replace("  ", "").replace("    ", "").replace("        ", "").replace("            ", "")
             self.createQuiz(quiz_data)
-            print("quiz sent to the creation function")
+            print("quiz sent to the creation function") # testing purposes
             storagesolutions.saveQuiz(self, subject=self.subject_dropdown.get(), grade=self.gradeLevel_dropdown.get(), response=quiz_data)
-            print("quiz sent to storage")
+            print("quiz sent to storage") # testing purposes
 
-        # Raises inner error frame if no quiz
+        # Raises inner error frame if no quiz found
         else:
             self.raise_error(response_code[0])
 
