@@ -16,7 +16,7 @@ import json
 
 
 
-class storagesolutions:
+class StorageSolutions:
 
     '''
     Storage solutions,

@@ -443,8 +443,6 @@ class TutorGPT(ModelBase):
         self.instructionsMgr = InstructionsManager(subject, gradeLevel)
 
         self.mode = mode
-        self.subject = subject
-        self.gradeLevel = gradeLevel
         self.topic = ""
         self.quizConfiguration = ["", "out", "out"]
 
