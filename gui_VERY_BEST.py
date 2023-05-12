@@ -351,12 +351,15 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
                 response_data = response_data[end+1:]
 
             self.quiz_data = quiz_as_list
+
+            print(f"{type(self.quiz_data)}")
+            print(self.quiz_data)
             self.createQuiz(self.quiz_data)
             print("quiz sent to the creation function") # testing purposes
             storagesolutions.saveQuiz(self, subject=self.subject_dropdown.get(), grade=self.gradeLevel_dropdown.get(), response=self.quiz_data)
             print("quiz sent to storage") # testing purposes
 
-        # Raises inner error frame if no quiz
+        # Raises inner error frame if no quiz found
         else:
             self.raise_error(response_code[0])
 

@@ -6,7 +6,7 @@ from typing import Any, overload # function overloading
 from textwrap import dedent # To make docstrings look nicer in the
 import inspect
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 def retryConnection(max_retries):
     def decorator(function):
@@ -99,7 +99,7 @@ class ModelBase:
 
         else:
             completion = self.api.create(model="gpt-3.5-turbo", messages=self.chat["messages"], temperature=temperature, top_p=top_p)
-                    
+
             # self.logCompletion(completion) #Add the AI's response to message history
 
             self.history.append({"role": "assistant", "content": completion["choices"][0]["message"]["content"]})
@@ -480,7 +480,7 @@ class TutorGPT(ModelBase):
         Compiles the quiz prompt for the AI
         '''
         self.topic = topic
-        
+
         if self.mode == "expand":
             print("Add topic reqiures a topic name, not a topic description. Use excerptMode()")
         elif self.mode == "learn":
@@ -488,7 +488,8 @@ class TutorGPT(ModelBase):
         elif self.mode == "quiz":
             self.prompt = dedent(f"""\
                 {self.instructionsMgr.getRulesContext()}
-                Create a {self.subject} quiz focusing on {self.subject} and {topic} for a {self.gradeLevel} student.
+                Ignore previous subjects, topics, and student levels. This is an independent quiz.
+                Create a {self.subject} quiz focusing on the {self.subject} of {topic} for a {self.gradeLevel} student.
                 Make the quiz 10 questions long, with four options each.
                 Return the quiz in JSON format, as a list of dictionaries, where one dictionary represents one question in the quiz.
                 Put the dictionaries into the following format:
