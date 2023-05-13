@@ -15,16 +15,24 @@ def get_generator():
     for chunk in response:
         yield chunk
 
-def getSubject():
-
+def setSubject(subject):
+    currentSubjectLevel = subject
+    getSubject(currentSubjectLevel)
     return subject
 
-def getGrade():
+def setGrade(grade):
+    
+    currentGradeLevel = grade
+    getGrade(currentGradeLevel)
 
+def getSubject(subject):
+    return subject
+
+def getGrade(grade):
     return grade
 
-
 model = TutorGPT(subject=getSubject(), gradeLevel=getGrade())
+
 stgsol = StorageSolutions()
 root = ctk.CTk() # Create the app's customtkinter window
 title = ('AI Tutor') # Title of the app
@@ -75,8 +83,6 @@ class scrollableFrame(ctk.CTkScrollableFrame):
                         time.sleep(0.03)
                 msgbox.configure(state='disabled')
                 self.req_height=0
-
-                stgsol.saveChat(subject=selectedSubject, grade=selectedGradeLevel, chat=self.ai_msg)
 
 
 # This class is used to create the radiobuttons and set the current quiz question as the title.
@@ -201,9 +207,9 @@ class UI:
         self.chatSettingsFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         self.chat_dropdown_heading_lbl = ctk.CTkLabel(self.chatSettingsFrame, text="Choose your subject \n and study level below:")
         self.chat_dropdown_heading_lbl.grid(row=1, column=1, padx=20, pady=20, sticky="ew")
-        self.chat_subjectDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Math", "History", "Geography", "Health", "Science"]variable=selectedChatSubjectLevel, command=lambda: self.setSubjectLevel('chat'))
+        self.chat_subjectDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Math", "History", "Geography", "Health", "Science"], variable=selectedChatSubjectLevel, command=self.setSubjectLevel)
         self.chat_subjectDropdown.grid(row=2, column=1, padx=20, pady=10)
-        self.chat_gradeLevelDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Elementary", "Middle", "High", "College"],variable=selectedChatGradeLevel, command=lambda: self.setGradeLevel('chat'))
+        self.chat_gradeLevelDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Elementary", "Middle", "High", "College"], variable=selectedChatGradeLevel, command=self.setGradeLevel)
         self.chat_gradeLevelDropdown.grid(row=3, column=1, padx=20, pady=10)
         self.chatSettingsFrame.grid_forget()
 
@@ -316,7 +322,7 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             width=200,
             values=subject_list,
             variable=selectedQuizSubjectLevel, 
-            command=lambda: self.setSubjectLevel('quiz'),
+            command=setSubject,
             font=(ctk.CTkFont(size=15)))
         self.subject_dropdown.set("Choose a subject:")
         self.subject_dropdown.grid(row=0, column=0, padx=10, pady=10)
@@ -327,7 +333,7 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             width=200,
             values=gradeLevel_list,
             variable=selectedQuizGradeLevel, 
-            command=lambda: self.setGradeLevel('quiz')
+            command=setGrade,
             font=ctk.CTkFont(size=15))
         self.gradeLevel_dropdown.set("Choose a study level:")
         self.gradeLevel_dropdown.grid(row=0, column=1, padx=10, pady=10)
@@ -362,10 +368,10 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
         self.postQuizFrame.grid_columnconfigure(1, weight=1)
         self.postQuizFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
 
-        self.retryQuizBtn = ctk.CTkButton(self.postQuizFrame, text='Submit', command=lambda: self.button_callback(self.retryQuiz())) 
+        self.retryQuizBtn = ctk.CTkButton(self.postQuizFrame, text='Submit', command=lambda: self.retryQuiz()) 
         self.retryQuizBtn.grid(row=1, column=0, padx=10, pady=10, sticky='nsew')
 
-        self.createNewQuizBtn = ctk.CTkButton(self.postQuizFrame, text='Submit', command=lambda: self.button_callback(self.newQuiz()))
+        self.createNewQuizBtn = ctk.CTkButton(self.postQuizFrame, text='Submit', command=lambda: self.newQuiz())
         self.createNewQuizBtn.grid(row=1, column=1, padx=10, pady=10, sticky='nsew')
         self.postQuizFrame.grid_forget()
 
@@ -427,11 +433,11 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
                 quiz_as_list.append(response_data[start:end+1])
                 response_data = response_data[end+1:]
 
-            self.quiz_data = quiz_as_list
+            quiz_data = quiz_as_list
 
-            self.createQuiz(self.quiz_data)
+            self.createQuiz(quiz_data)
             print("quiz sent to the creation function") # testing purposes
-            stgsol.saveQuiz(self, subject=self.subject_dropdown.get(), grade=self.gradeLevel_dropdown.get(), response=self.quiz_data)
+            stgsol.saveQuiz(self.subject_dropdown.get(), self.gradeLevel_dropdown.get(), quiz_data)
             print("quiz sent to storage") # testing purposes
 
         # Raises inner error frame if no quiz found
@@ -493,7 +499,7 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             self.process_request(msg)
 
     def newChat(self):
-        if self.chatHistory != []:
+        if self.conversationFrame: #
             model.clear()
         else:
             self.conversationFrame = scrollableFrame(self.chatWindow)
@@ -537,24 +543,12 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
 
     '<><><><><><><><><><><> These functions set variables <><><><><><><><><><><> '
 
-    def setSubjectLevel(self, panel):
-        if panel == 'chat':
-            # Set quiz subjectlevel
-        elif panel == 'quiz':
-            # Set quiz subjectlevel
-
-    def setGradeLevel(self, panel):
-        if panel == 'chat':
-            # Set chat gradelevel
-        elif panel == 'quiz':
-            # Set quiz gradelevel
-
     def modeManager(self, mode, value):
         if mode == 'Expand':
-            self.chat_command = self.setExcerpt(excerpt=value)
+            self.setExcerpt(value)
             model.setMode(mode)
         elif mode == 'Learn':
-            self.chat_command = self.learnMode()
+            self.setLearnMode(value)
             model.setMode(mode)
 
     def setMode(self, mode):

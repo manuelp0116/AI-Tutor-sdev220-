@@ -460,7 +460,6 @@ class TutorGPT(ModelBase):
         prompt = f"Hello, I am a student coming to you for help. I am in {gradeLevel} and I'm studying {subject} today"
         systemPrompt = f"You are a professional {gradeLevel} instructor who specializes in teaching in the {subject} area of study"
         self.instructionsMgr = InstructionsManager(subject, gradeLevel)
-
         self.mode = mode
         self.topic = ""
         self.quizConfiguration = ["", "out", "out"]
@@ -550,6 +549,8 @@ class TutorGPT(ModelBase):
 
     def setSubject(self, subject):
         self.subject = subject
+
+        if self.pro
 
     def setGradeLevel(self, gradeLevel):
         self.gradeLevel = gradeLevel

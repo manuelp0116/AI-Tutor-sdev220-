@@ -40,7 +40,10 @@ class StorageSolutions:
             for entry in entries:
                 name = str(entry)
                 name_list = [name]
-                
+                if len(name_list) > 5:
+                    # os.remove("path/to/file")
+                    pass
+                      
                 
                 
         
@@ -75,7 +78,7 @@ class StorageSolutions:
                 nameSplit = name.split('.')#split the files and creates the list
                 name_list = [nameSplit]
                 return name_list
-            
+
                 
     def getQuiz(self, userInput):
         '''
