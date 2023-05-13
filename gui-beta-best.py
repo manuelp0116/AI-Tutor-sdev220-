@@ -21,7 +21,6 @@ def setSubject(subject):
     return subject
 
 def setGrade(grade):
-    
     currentGradeLevel = grade
     getGrade(currentGradeLevel)
 
