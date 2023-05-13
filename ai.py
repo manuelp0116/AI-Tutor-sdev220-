@@ -7,7 +7,7 @@ from textwrap import dedent # To make docstrings look nicer in the
 import inspect
 from storageSolutions import StorageSolutions
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 storage = StorageSolutions()
 
@@ -280,8 +280,6 @@ class ModelBase:
         '''
         clears the chat history so the user can start from scratch conversing with the AI
         '''
-        storage.saveChat(self.chat["message"])
-
         self.chat["messages"].clear() #Clear the list
 
         self.chat = { #Re-add the system prompt (this should never be deleted)
@@ -343,7 +341,7 @@ class InstructionsManager:
     '''
     A class for managing and changing the AI base instructions (not specific prompts)
     '''
-    def __init__(self, subject, gradeLevel):
+    def __init__(self):
         self.rules = [
             {"Rule": "Don't generate content that isn't based on the subject", "Sub Rules": []},
             {"Rule": "Don't generate content that's not at the grade level", "Sub Rules": []},
@@ -352,8 +350,6 @@ class InstructionsManager:
         ]
 
         self.instructions = dedent(f"""\
-            Subject: {subject}
-            Grade Level: {gradeLevel}
             Rules: {{
                 1. {self.rules[0]["Rule"]}
                 2. {self.rules[1]["Rule"]}
@@ -397,15 +393,13 @@ class InstructionsManager:
                 if i == index - 1: # if the index matches the natural number
                     self.rules.remove(rule) # remove the rule
 
-    def modifyInitial(self, subject, gradeLevel):
+    def modifyInitial(self):
         '''
         Modifies the initial instruction set with a new subject and gradeLevel. It's very limited, but it can still be useful.
 
         Use this function in conjunction with the `modify()` method in the `ModelBase` class to force change an initial state
         '''
         self.instructions = dedent(f"""\
-            Subject: {subject}
-            Grade Level: {gradeLevel}
             Rules: {{
                 1. {self.rules[0]["Rule"]}
                 2. {self.rules[1]["Rule"]}
@@ -456,13 +450,15 @@ class InstructionsManager:
         return resultStr
 
 class TutorGPT(ModelBase):
-    def __init__(self, subject, gradeLevel, mode="learn"):
-        prompt = f"Hello, I am a student coming to you for help. I am in {gradeLevel} and I'm studying {subject} today"
-        systemPrompt = f"You are a professional {gradeLevel} instructor who specializes in teaching in the {subject} area of study"
-        self.instructionsMgr = InstructionsManager(subject, gradeLevel)
+    def __init__(self, mode="Learn"):
+        prompt = f"Hello, I am a student coming to you for help. I'm studying today"
+        systemPrompt = f"You are a professional instructor who specializes in teaching any area of study"
+        self.instructionsMgr = InstructionsManager()
         self.mode = mode
         self.topic = ""
         self.quizConfiguration = ["", "out", "out"]
+        self.subject = ''
+        self.gradeLevel = ''
 
         super().__init__(prompt, systemPrompt)
 
@@ -483,12 +479,12 @@ class TutorGPT(ModelBase):
         '''
         self.topic = topic
         # Make sure we are in the right mode
-        if self.mode == "learn":
+        if self.mode == "Learn":
             self.prompt = f"{self.instructionsMgr.getRulesContext()}Question: Can you help me learn about {topic}?" # Change the prompt to fit the user's requirements
-        elif self.mode == "quiz":
+        elif self.mode == "Quiz":
             print("Creating a quiz based on a topic meant for learning is not helpful to the student, use quizMode()")
         else:
-            if self.mode == "expand":
+            if self.mode == "Expand":
                 print("Add topic reqiures a topic name, not a topic description. Use excerptMode()")
             else:
                 print(f"Mode {self.mode} not compatible with learnMode()")
@@ -499,11 +495,11 @@ class TutorGPT(ModelBase):
         '''
         self.topic = topic
 
-        if self.mode == "expand":
+        if self.mode == "Expand":
             print("Add topic reqiures a topic name, not a topic description. Use excerptMode()")
-        elif self.mode == "learn":
+        elif self.mode == "Learn":
             print("Excerpt mode is for excerpts taken from textbooks or other source material that the student needs help understanding, not for learning about a topic. Use learnMode()")
-        elif self.mode == "quiz":
+        elif self.mode == "Quiz":
             self.prompt = dedent(f"""\
                 {self.instructionsMgr.getRulesContext()}
                 Ignore previous subjects, topics, and student levels. This is an independent quiz.
@@ -535,11 +531,11 @@ class TutorGPT(ModelBase):
         This function takes in one parameter:
             excerpt - the excerpt of text the user will provide to the AI
         '''
-        if self.mode == "expand":
+        if self.mode == "Expand":
             self.prompt = f"{self.instructionsMgr.getRulesContext()}Question: Can you help me understand what this means: \"{excerpt}\"?"
-        elif self.mode == "learn":
+        elif self.mode == "Learn":
             print("Excerpt mode is for excerpts taken from textbooks or other source material that the student needs help understanding, not for learning about a topic. Use learnMode()")
-        elif self.mode == "quiz":
+        elif self.mode == "Quiz":
             print("creating a quiz based on an excerpt of text taken from a textbook is not helpful to the student, use quizMode()")
 
     #----------------------------- Attribute Modifiers -----------------------------#
@@ -549,8 +545,6 @@ class TutorGPT(ModelBase):
 
     def setSubject(self, subject):
         self.subject = subject
-
-        if self.pro
 
     def setGradeLevel(self, gradeLevel):
         self.gradeLevel = gradeLevel

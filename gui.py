@@ -15,21 +15,13 @@ def get_generator():
     for chunk in response:
         yield chunk
 
-def setSubject(subject):
-    currentSubjectLevel = subject
-    getSubject(currentSubjectLevel)
+def get_quiz():
+    response=model.complete()
+    for part in response:
+        print(f'{part}')
+        yield part
 
-def setGrade(grade):
-    currentGradeLevel = grade
-    getGrade(currentGradeLevel)
-
-def getSubject(subject):
-    return subject
-
-def getGrade(grade):
-    return grade
-
-model = TutorGPT(subject=getSubject(), gradeLevel=getGrade())
+model = TutorGPT()
 
 stgsol = StorageSolutions()
 root = ctk.CTk() # Create the app's customtkinter window
@@ -41,18 +33,17 @@ gradeLevel_list = ["Elementary school", "Middle school", "Secondary school", "Co
 # This class is used to create a new scrollable frame. Once instantiated, the program can add mesages from both
 # User and Assistant.
 class scrollableFrame(ctk.CTkScrollableFrame):
-    def __init__(self, msg):
+    def __init__(self, master):
+        super().__init__(master)
         self.grid_columnconfigure(0, weight=1)
-        self.msg = msg
         self.msgboxes = []
         self.req_height = 10
 
-    
     # This function gets the student message and creates new message boxes inside of the conversationFrame
     def addMsg(self, msg):
         senders=['User', 'Assistant'] #User is the Student and Assisistant is the AI
         for sender in senders:
-            msgbox = ctk.CTkTextbox(self, height=10, wrap="word")
+            msgbox = ctk.CTkTextbox(self, height=10, wrap="word", activate_scrollbars=False)
             self.msgboxes.append(msgbox)
             if sender == 'User':
                 msgbox.grid(row=len(self.msgboxes), column=0, padx=5, pady=5, sticky="nsew")
@@ -87,6 +78,7 @@ class scrollableFrame(ctk.CTkScrollableFrame):
 class createRadioButtons(ctk.CTkFrame):
     def __init__(self, master, title, values):
         super().__init__(master)
+        self.grid_rowconfigure(8, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.values = values
         self.title = title
@@ -123,8 +115,10 @@ class UI:
         self.chatWindows = []
         self.navbarLink = ''
         self.placeholder=''
-        self.selectedSubject = ctk.StringVar(value='Subject:')
-        self.selectedGradeLevel = ctk.StringVar(value='Grade Level:')
+        self.selectedChatSubjectLevel = ctk.StringVar(value='Subject:')
+        self.selectedChatGradeLevel = ctk.StringVar(value='Grade Level:')
+        self.selectedQuizSubjectLevel = ctk.StringVar(value='Subject:')
+        self.selectedQuizGradeLevel = ctk.StringVar(value='Grade Level:')
         self.selectedMode = ctk.StringVar(value='Tutor Mode:')
 
         #####################################################################################################
@@ -192,37 +186,45 @@ class UI:
         self.chatFrameWidgets = ctk.CTkFrame(self.chatFrame, corner_radius=0, fg_color="transparent")
         self.chatFrameWidgets.grid_rowconfigure(1, weight=1)
         self.chatFrameWidgets.grid_columnconfigure(3, weight=1)
-        self.chatFrameWidgets.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
+        self.chatFrameWidgets.grid(row=0, column=0, sticky="nsew", padx=20, pady=10)
 
         self.chatWindow = ctk.CTkFrame(self.chatFrameWidgets, corner_radius=0, fg_color="transparent")
         self.chatWindow.grid_rowconfigure(1, weight=1)
         self.chatWindow.grid_columnconfigure(2, weight=1)
-        self.chatWindow.grid(row=1, column=1, sticky="nsew", padx=20, pady=10)
+        self.chatWindow.grid(row=1, column=0, sticky="nsew", padx=20, pady=10)
 
-        self.chatSettingsFrame = ctk.CTkFrame(self.chatFrame, corner_radius=0, fg_color="transparent")
+        self.chatSettingsFrame = ctk.CTkFrame(self.chatFrameWidgets, corner_radius=0, fg_color="transparent")
         self.chatSettingsFrame.grid_rowconfigure(3, weight=1)
         self.chatSettingsFrame.grid_columnconfigure(1, weight=1)
         self.chatSettingsFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         self.chat_dropdown_heading_lbl = ctk.CTkLabel(self.chatSettingsFrame, text="Choose your subject \n and study level below:")
         self.chat_dropdown_heading_lbl.grid(row=1, column=1, padx=20, pady=20, sticky="ew")
-        self.chat_subjectDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Math", "History", "Geography", "Health", "Science"], variable=self.selectedChatSubjectLevel, command=self.setSubject)
+        self.chat_subjectDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Math", "History", "Geography", "Health", "Science"], command=self.setSubject, variable=self.selectedChatSubjectLevel)
         self.chat_subjectDropdown.grid(row=2, column=1, padx=20, pady=10)
-        self.chat_gradeLevelDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Elementary", "Middle", "High", "College"], variable=self.selectedChatGradeLevel, command=self.setGrade)
-        self.chat_gradeLevelDropdown.grid(row=3, column=1, padx=20, pady=10)
+        self.chat_gradeLevelDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Elementary", "Middle", "High", "College"], command=self.setGrade, variable=self.selectedChatGradeLevel)
+        self.chat_gradeLevelDropdown.grid(row=2, column=2, padx=20, pady=10)
+        self.hideChatSettingsBtn = ctk.CTkButton(self.chatSettingsFrame, text="Hide Settings", command=lambda: self.chatSettingsFrame.grid_forget())
+        self.hideChatSettingsBtn.grid(row=3, column=2, padx=20, pady=10)
         self.chatSettingsFrame.grid_forget()
 
         self.chatSettingsBtn = ctk.CTkButton(self.chatFrameWidgets, corner_radius=0, height=10, width=10, border_spacing=10, text="Chat Settings",
             fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
             image=self.settingsBtn_image, anchor="nw", command=lambda: self.switchPanel(panel=self.chatSettingsFrame))
         self.chatSettingsBtn.grid(row=0, column=0, padx=5, pady=5, sticky='nw')
+
+        self.newChatBtn = ctk.CTkButton(self.chatFrameWidgets, corner_radius=0, height=10, width=10, border_spacing=10, text="Chat Settings",
+            fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+            image=self.studentBtn_image, anchor="nw", command=lambda: self.newChat())
+        self.chatSettingsBtn.grid(row=0, column=1, padx=5, pady=5, sticky='nw')
+
         self.chatSettingsFrame.grid_forget()  # remove chat settings frame
 
-        self.modeDropdown = ctk.CTkOptionMenu(self.chatFrameWidgets, width=15, values=["Learn", "Expand"], command=self.button_callback('mode'), variable=self.selectedMode)
+        self.modeDropdown = ctk.CTkOptionMenu(self.chatFrameWidgets, width=15, values=["Learn", "Expand"], command=self.setMode, variable=self.selectedMode)
         self.modeDropdown.grid(row=2, column=0, padx=10, pady=10, sticky="s")
         # Create question input field and add widgets into the chatFrame
         self.chat_input = ctk.CTkEntry(self.chatFrameWidgets, placeholder_text=f"{self.placeholder}", fg_color="transparent")
         self.chat_input.grid(row=2, column=1, padx=10, pady=10, sticky="nsew")
-        self.askAI_btn = ctk.CTkButton(self.chatFrameWidgets, text="Ask AI", font=ctk.CTkFont(size=15, weight="bold"), command=lambda: self.create_request(msg=self.chat_input.get))
+        self.askAI_btn = ctk.CTkButton(self.chatFrameWidgets, text="Ask AI", font=ctk.CTkFont(size=15, weight="bold"), command=lambda: self.create_request(msg=self.chat_input.get()))
         self.askAI_btn.grid(row=2, column=2, padx=10, pady=10, sticky="s")
 
         #####################################################################################################
@@ -282,13 +284,14 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
         self.quizFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
 
         # Create Quiz Panels These are the screens that populate inside of the quizFrame
+
         self.quizContainerFrame = ctk.CTkFrame(self.quizFrame, corner_radius=0, fg_color="transparent")
         self.quizContainerFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         self.quizContainer = ctk.CTkFrame(self.quizContainerFrame, corner_radius=0, fg_color="transparent")
         self.quizContainer.grid(row=0, column=2, sticky="nsew", padx=20, pady=10)
         self.score_lbl = ctk.CTkLabel(self.quizContainer, text='')
         self.score_lbl.grid(row=8, column=0,)
-        self.submit_button = ctk.CTkButton(self.quizContainer, text='Submit', command=lambda: Quiz.submitAnswer()) # type: ignore
+        self.submit_button = ctk.CTkButton(self.quizContainer, text='Submit', command=lambda: self.submitAnswer()) # type: ignore
         self.submit_button.grid(row=5, column=0, sticky="nsew", pady=10, padx=40)
         self.progress_bar = ctk.CTkProgressBar(self.quizContainer)
         self.progress_bar.configure(mode="determinate")
@@ -318,9 +321,9 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             self.quizFrame_subframe,
             height=40,
             width=200,
-            values=subject_list,
-            variable=self.selectedQuizSubjectLevel, 
-            command=setSubject,
+            values=subject_list, 
+            command=self.setSubject,
+            variable=self.selectedQuizSubjectLevel,
             font=(ctk.CTkFont(size=15)))
         self.subject_dropdown.set("Choose a subject:")
         self.subject_dropdown.grid(row=0, column=0, padx=10, pady=10)
@@ -329,9 +332,9 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             self.quizFrame_subframe,
             height=40,
             width=200,
-            values=gradeLevel_list,
-            variable=self.selectedQuizGradeLevel, 
-            command=setGrade,
+            values=gradeLevel_list, 
+            command=self.setGrade,
+            variable=self.selectedQuizGradeLevel,
             font=ctk.CTkFont(size=15))
         self.gradeLevel_dropdown.set("Choose a study level:")
         self.gradeLevel_dropdown.grid(row=0, column=1, padx=10, pady=10)
@@ -351,7 +354,8 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             width=200,
             text="Create Quiz",
             font=ctk.CTkFont(size=20, weight="bold"),
-            command=lambda: self.getAIQuiz(model))
+            command=lambda: self.getAIQuiz(model))    
+                                                
         self.createQuiz_btn.grid(row=5, column=1, padx=10, pady=60)
 
         self.wait_label = ctk.CTkLabel(
@@ -366,25 +370,18 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
         self.postQuizFrame.grid_columnconfigure(1, weight=1)
         self.postQuizFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
 
-        self.retryQuizBtn = ctk.CTkButton(self.postQuizFrame, text='Submit', command=lambda: self.retryQuiz()) 
-        self.retryQuizBtn.grid(row=1, column=0, padx=10, pady=10, sticky='nsew')
+        #self.retryQuizBtn = ctk.CTkButton(self.postQuizFrame, text='Submit', command=lambda: self.retryQuiz()) 
+        #self.retryQuizBtn.grid(row=1, column=0, padx=10, pady=10, sticky='nsew')
 
-        self.createNewQuizBtn = ctk.CTkButton(self.postQuizFrame, text='Submit', command=lambda: self.newQuiz())
-        self.createNewQuizBtn.grid(row=1, column=1, padx=10, pady=10, sticky='nsew')
+        #self.createNewQuizBtn = ctk.CTkButton(self.postQuizFrame, text='Submit', command=lambda: self.newQuiz())
+        #self.createNewQuizBtn.grid(row=1, column=1, padx=10, pady=10, sticky='nsew')
         self.postQuizFrame.grid_forget()
 
         #Initialize the default frame
         self.currentFrame = self.studentFrame
         self.currentTab = self.studentFrame
-        self.studentFrame.tkraise()
-
-    def setPanel(self, panel):
-        self.currentPanel = panel
         
     def switchPanel(self, panel):
-        self.currentPanel.grid_forget()
-        self.setPanel(panel)
-        print(self.currentPanel, panel)
         panel.grid(row=0, column=1, sticky="nsew")
 
     def checkConnection(self, result):
@@ -404,19 +401,25 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
         If JSON code block is found, raises the quizContainer_frame and sends it the quiz data,
         if not, raises an error frame for the user
         """
+        # Create me a 10 question multiple choice quiz for {}
         # Reset model settings
         model.setMode("quiz")
-        model.setSubject(self.subject_dropdown.get())
-        model.setGradeLevel(self.gradeLevel_dropdown.get())
-        model.quizMode(topic=self.quiz_topic_entry.get())
+        self.setMode('quiz')
+        model.setSubject('middle school')
+        model.setGradeLevel('history')
+        'model.setSubject(self.subject_dropdown.get())'
+        'model.setGradeLevel(self.gradeLevel_dropdown.get())'
 
-        # Call the AI
-        response = model.complete(stream=True)
+        model.quizMode('generate a 10 question multiple choice quiz about the french revolution in json format')
+        'model.quizMode(self.quiz_topic_entry.get())'
+
+        messagebox.showinfo("Your Message:", f'{self.quiz_topic_entry.get()}')
 
         # Parsing AI response
         response_raw = ""
-        for chunk in response:
-            response_raw += chunk
+        parts = get_quiz()
+        for part in parts:
+            response_raw += part
         response_code = response_raw.strip().split("```")
 
         # Raise quiz frame if quiz was generated, sends quiz data list to quiz creation function and storage
@@ -428,10 +431,11 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             while len(quiz_as_list) != 10:
                 start = response_data.find("{")
                 end = response_data.find("}")
-                quiz_as_list.append(response_data[start:end+1])
+                quiz_as_list.append(response_data[start:end+1] + '\n')
                 response_data = response_data[end+1:]
 
             quiz_data = quiz_as_list
+            messagebox.showinfo("Quiz Data", f'{quiz_data}')
 
             self.createQuiz(quiz_data)
             print("quiz sent to the creation function") # testing purposes
@@ -479,38 +483,52 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
         self.error_x.grid(row=0, column=1, padx=1, pady=2, sticky="ne")
 
     def createQuiz(self, quiz_data):
-        Quiz(quiz_data=quiz_data)
+        Quiz(quiz_data)
 
-    def checkFields(self):
-        if self.currentTab == 'Chat':
-            while self.chat_input.get() != '':
-                self.askAI_btn.configure(state='normal')
-            self.askAI_btn.configure(state='disabled')
-        elif self.currentTab == 'Quiz':
-            while self.quiz_topic_entry.get() != '':
-                self.createQuiz_btn.configure(state='normal')
-            self.createQuiz_btn.configure(state='disabled')
+    #def checkFields(self):
+        #if self.currentTab == 'Chat':
+            #while self.chat_input.get() != '':
+                #self.askAI_btn.configure(state='normal')
+                #return True
+            #self.askAI_btn.configure(state='disabled')
+            #return True
+        
+        #elif self.currentTab == 'Quiz':
+            #while self.quiz_topic_entry.get() != '':
+                #self.createQuiz_btn.configure(state='normal')
+                #return True
+            #self.createQuiz_btn.configure(state='disabled')
+            #return True 
+            
 
     # Get the response from the OpenAI API and display it in the AI response in the respective window
     def create_request(self, msg):
-            self.newChat()
-            self.process_request(msg)
+        self.newChat()
+        self.process_request(msg)
 
     def newChat(self):
-        if self.conversationFrame: #
+        if not self.chatWindows == []: #
             model.clear()
+            return
         else:
+            print('GO HERE??')
             self.conversationFrame = scrollableFrame(self.chatWindow)
-            self.conversationFrame.grid(row=0, column=1)
-            self.switchPanel(self.conversationFrame)
+            print('GO HERE 2??')
+            self.chatWindows.append(self.conversationFrame)
+            return
 
     #  and self.checkConnection(result=model.complete()):
     # Get the response from the OpenAI API and display it in the AI response in the respective window
     def process_request(self, msg):
-        if self.checkFields():
+        print('Check Fields?')
+        if (2+2) == 4:
             # Create a scrollable frame to contain each the conversation between the user and the AI
             # Display the student's message and the AI's in the conversation
+            print('PROCESSED')
+            self.modeManager(msg=msg)
             self.conversationFrame.addMsg(msg)
+            self.switchPanel(self.conversationFrame)
+            print('POST PROCESSED')
         else:
             return
 
@@ -540,25 +558,31 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             pass
 
     '<><><><><><><><><><><> These functions set variables <><><><><><><><><><><> '
+    
+    def setSubject(self, subject): 
+        print('SUBJECT:', subject) 
+        model.setSubject(subject)
 
-    def modeManager(self, mode, value):
-        if mode == 'Expand':
-            self.setExcerpt(value)
-            model.setMode(mode)
-        elif mode == 'Learn':
-            self.setLearnMode(value)
-            model.setMode(mode)
+    def setGrade(self, grade):
 
+        print('GRADE:', grade)
+        model.setGradeLevel(grade)
+
+        return
     def setMode(self, mode):
+        self.mode = mode
+
+        model.clear()
         model.setMode(mode)
 
-    def setExcerpt(self, excerpt):
-        model.excerptMode(excerpt)
+        return    
+    # This finds the current tutor mode and reroutes the AI behavior of the 'Ask AI button accordingly'
+    def modeManager(self, msg):
+        if self.mode == 'Expand':
+            model.excerptMode(msg)
 
-    def setLearnMode(self, topic):
-        model.learnMode(topic=topic)
-        
-
+        elif self.mode == 'Learn':
+            model.learnMode(msg)
 
     def change_appearance_mode_event(self, new_appearance_mode):
         ctk.set_appearance_mode(new_appearance_mode)
@@ -566,10 +590,15 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
 class Quiz(UI):
     def __init__(self, quiz_data):
         self.quizAnswers = []
+        self.answer = ''
+
+        self.quizContainerFrame = None
+        self.quizContainer = None
         self.quiz_data = quiz_data
         self.quiz_length = len(self.quiz_data)
         self.current_question = ''
         self.quiz_choices = ''
+        self.question_index = 0
         self.correct_answer = ''
         self.progress = 0
         self.max_score = 100
@@ -577,9 +606,9 @@ class Quiz(UI):
         self.display_question()
 
     def mapQuizData(self):
-        self.current_question_data = self.quiz_data[len(Student.answers)]
-        vars = ['current_question', 'quiz_choices' 'correct_answer']
-        params = ['question', 'options' ,'answer']
+        self.current_question_data = self.quiz_data[self.question_index]
+        vars = ['quiz_type', 'current_question', 'quiz_choices', 'correct_answer']
+        params = ['type', 'question', 'options', 'answer']
         for var, param in zip(vars, params):
             value = self.current_question_data[param]
             setattr(self, var, value)
@@ -593,6 +622,7 @@ class Quiz(UI):
         self.multipleChoiceFrame = createRadioButtons(self.quizContainer, title=self.current_question, values=self.quiz_choices)
         self.multipleChoiceFrame.grid(row=0, column=3, padx=40, pady=10, sticky="nsew")
 
+        self.switchPanel(self.quizContainerFrame)
     # function call: sanitizeInputField()
 
     # Function for checking if all the input fields are both filled and contain valid
@@ -609,7 +639,6 @@ class Quiz(UI):
 
     def submitAnswer(self):
         # Send student response to AI
-        self.create_request(self.answer)
         self.checkAnswer()
 
     def checkAnswer(self):
@@ -624,11 +653,13 @@ class Quiz(UI):
 
     def nextQuestion(self):
         # This gets the student answer for the current question
+        self.question_index += 1
         Student.answers.append(self.answer)
         if len(Student.answers) == self.quiz_length:
             messagebox.showinfo("Score", f"You scored {Student.score}% out of {self.max_score}%")
             # Show quiz results
             self.quizResultsFrame = scrollableFrame(self.quizContainerFrame)
+            self.quizResultsFrame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
             #self.quizResultsFrame.showQuizResults(results)
             self.switchPanel(self.quizResultsFrame)
         self.display_question()
@@ -639,7 +670,6 @@ class Quiz(UI):
         self.progress += (1 / self.quiz_length)
         self.progress_bar.set(self.progress)
         self.nextQuestion()
-
 
 "<><><><><><><><><><><><><><><>  Custom Tkinter Window Settings <><><><><><><><><><><><><><><><><><>"
 

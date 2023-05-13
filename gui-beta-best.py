@@ -2,7 +2,7 @@ import customtkinter as ctk # Import customtkinter module using a shortened vers
 from tkinter import messagebox # This is used to show a messagebox
 import json, os, time
 from PIL import Image # Import python image library for the button images
-from ai import TutorGPT # The AI class
+from ai import TutorGPT, TutorGPTFactory # The AI class
 from dataclasses import dataclass
 from textwrap import dedent
 from storageSolutions import StorageSolutions
@@ -30,7 +30,8 @@ def getSubject(subject):
 def getGrade(grade):
     return grade
 
-model = TutorGPT(subject=getSubject(), gradeLevel=getGrade())
+# model = TutorGPT(subject=getSubject(), gradeLevel=getGrade())
+factory = TutorGPTFactory()
 
 stgsol = StorageSolutions()
 root = ctk.CTk() # Create the app's customtkinter window
@@ -406,10 +407,13 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
         if not, raises an error frame for the user
         """
         # Reset model settings
-        model.setMode("quiz")
-        model.setSubject(self.subject_dropdown.get())
-        model.setGradeLevel(self.gradeLevel_dropdown.get())
-        model.quizMode(topic=self.quiz_topic_entry.get())
+        # model.setMode("quiz")
+        # model.setSubject(self.subject_dropdown.get())
+        # model.setGradeLevel(self.gradeLevel_dropdown.get())
+        # model.quizMode(topic=self.quiz_topic_entry.get())
+        model = factory.createTutorGPT(self.subject_dropdown.get(), self.gradeLevel_dropdown.get())
+        model.setMode("quiz") # you can use model here locally like this, but everywhere else you'll need to use factory.model.setMode() (or whatever method you want to call)
+        
 
         # Call the AI
         response = model.complete(stream=True)
