@@ -20,6 +20,11 @@ and the topic t hat the student wants to study for.
 
 ## prerequisites
 
+   ### install 
+   * customTkinter
+   * PIL
+   *tkinter
+
 
 
 
