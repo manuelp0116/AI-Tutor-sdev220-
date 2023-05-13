@@ -206,9 +206,9 @@ class UI:
         self.chatSettingsFrame.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         self.chat_dropdown_heading_lbl = ctk.CTkLabel(self.chatSettingsFrame, text="Choose your subject \n and study level below:")
         self.chat_dropdown_heading_lbl.grid(row=1, column=1, padx=20, pady=20, sticky="ew")
-        self.chat_subjectDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Math", "History", "Geography", "Health", "Science"], variable=selectedChatSubjectLevel, command=self.setSubjectLevel)
+        self.chat_subjectDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Math", "History", "Geography", "Health", "Science"], variable=self.selectedChatSubjectLevel, command=self.setSubject)
         self.chat_subjectDropdown.grid(row=2, column=1, padx=20, pady=10)
-        self.chat_gradeLevelDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Elementary", "Middle", "High", "College"], variable=selectedChatGradeLevel, command=self.setGradeLevel)
+        self.chat_gradeLevelDropdown = ctk.CTkOptionMenu(self.chatSettingsFrame, values=["Elementary", "Middle", "High", "College"], variable=self.selectedChatGradeLevel, command=self.setGrade)
         self.chat_gradeLevelDropdown.grid(row=3, column=1, padx=20, pady=10)
         self.chatSettingsFrame.grid_forget()
 
@@ -320,7 +320,7 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             height=40,
             width=200,
             values=subject_list,
-            variable=selectedQuizSubjectLevel, 
+            variable=self.selectedQuizSubjectLevel, 
             command=setSubject,
             font=(ctk.CTkFont(size=15)))
         self.subject_dropdown.set("Choose a subject:")
@@ -331,7 +331,7 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
             height=40,
             width=200,
             values=gradeLevel_list,
-            variable=selectedQuizGradeLevel, 
+            variable=self.selectedQuizGradeLevel, 
             command=setGrade,
             font=ctk.CTkFont(size=15))
         self.gradeLevel_dropdown.set("Choose a study level:")
