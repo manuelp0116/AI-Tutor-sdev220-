@@ -1,13 +1,12 @@
 import openai # AI outputs
 from openai.error import APIConnectionError # Connection Error Handling
-# import whisper
 
 from typing import Any, overload # function overloading
-from textwrap import dedent # To make docstrings look nicer in the
+from textwrap import dedent # To make docstrings look nicer in the code
 import inspect
 from storageSolutions import StorageSolutions
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 storage = StorageSolutions()
 
@@ -42,23 +41,6 @@ class ModelBase:
 
         self.history = [] # This is the stored chat history.
         self.api = openai.ChatCompletion()
-
-        # self.chat = { # initializes the chat with a system prompt and a starter prompt
-        #     "chat": {
-        #         "messages": [
-        #             {"role": "system", "content": systemPrompt},
-        #             {"role": "user", "content": prompt},
-        #             {"role": "assistant", "content": "Understood! How can I help you?"}
-        #         ]
-        #     },
-        #     "quiz": {
-        #         "messages": [
-        #             {"role": "system", "content": systemPrompt},
-        #             {"role": "user", "content": prompt},
-        #             {"role": "assistant", "content": "Understood! How can I help you?"}
-        #         ]
-        #     }
-        # }
 
         self.chat = {
             "messages": [
@@ -103,8 +85,6 @@ class ModelBase:
         else:
             completion = self.api.create(model="gpt-3.5-turbo", messages=self.chat["messages"], temperature=temperature, top_p=top_p)
 
-            # self.logCompletion(completion) #Add the AI's response to message history
-
             self.history.append({"role": "assistant", "content": completion["choices"][0]["message"]["content"]})
 
             return completion["choices"][0]["message"]["content"]
@@ -147,8 +127,6 @@ class ModelBase:
         resultDict.update(ResponseDict) # concatenate the response dictionary into the resulting dictionary to create the final product
 
         self.history.append(resultDict) # save the resulting message dictionary to history
-
-        # print(self.history) # debug
 
     # Using overloads here because there should be multiple ways a developer can use this function
     @overload
@@ -322,20 +300,6 @@ class ModelBase:
         sets the user prompt
         '''
         self.prompt = prompt
-
-    # def getChatHistory(self, index):
-    #     MAX_INDEX = len(self.chat["messages"]) # the amount of messages in the chat - a constant variable
-    #     RESTRICTED_NUMS = [0, 1, (MAX_INDEX * -1) - 2, (MAX_INDEX * -1) - 1] # These are the indexes of the AI instructions that shouldn't be deleted - a constant variable
-
-    #     for i, message in enumerate(self.chat["messages"]):
-    #         if i == index:
-    #             return (self.chat["messages"][i]["content"])
-
-    # def getRecentHistory(self):
-    #     MAX_INDEX = len(self.chat["messages"]) # the amount of messages in the chat - a constant variable
-    #     RESTRICTED_NUMS = [0, 1, (MAX_INDEX * -1) - 2, (MAX_INDEX * -1) - 1] # These are the indexes of the AI instructions that shouldn't be deleted - a constant variable
-
-    #     return self.chat["messages"][-1]["content"]
 
 class InstructionsManager:
     '''
@@ -551,25 +515,3 @@ class TutorGPT(ModelBase):
 
     def setQuizConfiguration(self, configuration):
         self.quizConfiguration = configuration
-
-# This part of the code is used solely for testing purposes.
-# It won't run when app.py is executed because __name__ will only equal "__main__" if this python file is the main execution file
-if __name__ == "__main__":
-    instructions = """\
-    Subject:
-    Grade Level:
-    Rules: {
-        1. Don't generate a quiz that isn't based on the subject
-        2. Don't generate a quiz that's not at the grade level
-        3. Don't generate any content that isn't relevant
-            a. For example, Alien Planets have nothing to do with Health. Pulleys and Levers have nothing to do with Programming
-        4. Tell the user what rule an invalid prompt violates
-            a. for example if the user violates rule one, say: "I'm sorry, but I am not allowed to generate any content that isn't based on your selected subject. Please change the topic or change your subject"
-    }
-    ENFORCE THESE RULES
-    Example prompt: generate a multiple choice quiz about math at the college level about how speakers use ultrasonic wavelengths to transmit sound throughout the air.
-    Example output: Here's a multiple choice quiz about how speakers use ultrasonic wavelengths to transmit sound throughout the air as it relates to math.
-
-    Do you understand these rules?"""
-    modifiedInstructions = dedent(instructions)
-    print(modifiedInstructions)

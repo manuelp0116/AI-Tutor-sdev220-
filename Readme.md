@@ -1,6 +1,8 @@
 # BrainSpark AI-Tutor
 
-## to run it run ptyhon gui.py
+## to run it run ptyhon gui.py, add your own openai API key to AI.py, and when the gui opens it gets stuck on the quiz screen, click between chat and quiz a couple time to go to chat.
+# how to use the app
+### first go to AI and add your own openAI api key, run in the terminal on python 3.10.9 when app open click between stedent, chat and quiz mode to access the chat window, small fix we weren't able to fix, and in quiz ask question to the ai related to the subject, AI prompt make it really picky about what it takes as valid imput
 
 ## Description 
 This app powered by openAI Api was made with the intend to help students with their learning, this app has two main modes, chat, and quiz or test me; chat will allow 
@@ -248,7 +250,9 @@ and the topic t hat the student wants to study for.
       * functionn checks for directory name with os and creates directory path to save chat and 
 
    * ### saveQuiz:
-      * this function will save a json file with the quiz information for
+      * this function will save a json file with the quiz information for future use, user would be able to get into the quizzes into the future
+   * ### readquiz: 
+      * this function reads the selected qiz file and reads the json file to be used again as a quiz. this function wasn't added to the program.
 
    
 
