@@ -7,7 +7,7 @@ from textwrap import dedent # To make docstrings look nicer in the
 import inspect
 from storageSolutions import StorageSolutions
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 storage = StorageSolutions()
 
@@ -450,7 +450,7 @@ class InstructionsManager:
         return resultStr
 
 class TutorGPT(ModelBase):
-    def __init__(self, mode="Learn"):
+    def __init__(self, mode):
         prompt = f"Hello, I am a student coming to you for help. I'm studying today"
         systemPrompt = f"You are a professional instructor who specializes in teaching any area of study"
         self.instructionsMgr = InstructionsManager()

@@ -1,10 +1,13 @@
 # BrainSpark AI-Tutor
 
+## to run it run ptyhon gui.py
+
 ## Description 
 This app powered by openAI Api was made with the intend to help students with their learning, this app has two main modes, chat, and quiz or test me; chat will allow 
 the user to chat with an AI made and trained specifically to help answering and expanding on school related topic, the user will be able to get a more personaliazed chat
 selecting the grade, and subject from the dropdowns, this will make the AI an expert on the topic. The quiz function will let the user get a quiz made in the spot from the selection of grade, subject
 and the topic t hat the student wants to study for.
+
 
    # AI
    we are using openAI API for our project, this way we can se the capabilities of chatgpt3.5 turbo to answer all the questions the user has, and  thanks to this we are able to create a json file output to create personalized AI generated quizzes.
@@ -241,8 +244,12 @@ and the topic t hat the student wants to study for.
    # Storage solutions
    this class deal with storage for our different files, chat and quiz, quizzes are stored in json file, and chat would be stored in a txt file. Tiem cosntrains made us not being able to use this class, and storage solutions is not in use at the moment. thefuntions on this class are:
    
-   * housekeep: 
-      * fucntionn checks for directory name with os api
+   * ### housekeep: 
+      * functionn checks for directory name with os and creates directory path to save chat and 
+
+   * ### saveQuiz:
+      * this function will save a json file with the quiz information for
+
    
 
 ## Contributing
