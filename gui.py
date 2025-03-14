@@ -457,21 +457,6 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
 
     def createQuiz(self, quiz_data):
         Quiz(quiz_data)
-
-    #def checkFields(self):
-        #if self.currentTab == 'Chat':
-            #while self.chat_input.get() != '':
-                #self.askAI_btn.configure(state='normal')
-                #return True
-            #self.askAI_btn.configure(state='disabled')
-            #return True
-        
-        #elif self.currentTab == 'Quiz':
-            #while self.quiz_topic_entry.get() != '':
-                #self.createQuiz_btn.configure(state='normal')
-                #return True
-            #self.createQuiz_btn.configure(state='disabled')
-            #return True 
             
     # Get the response from the OpenAI API and display it in the AI response in the respective window
     def create_request(self, msg):
@@ -489,17 +474,12 @@ test for you on a topic of your choice.\n\nWhat would you like to do?
 
     # Get the response from the OpenAI API and display it in the AI response in the respective window
     def process_request(self, msg):
-        print('Check Fields?')
-        if (2+2) == 4: # this is a feature!!!
-            # Create a scrollable frame to contain each the conversation between the user and the AI
-            # Display the student's message and the AI's in the conversation
-            print('PROCESSED')                
-            self.modeManager(msg=msg)
-            self.conversationFrame.addMsg(msg)
-            self.switchPanel(self.conversationFrame)
-            print('POST PROCESSED')
-        else:
-            return
+        # Create a scrollable frame to contain each the conversation between the user and the AI
+        # Display the student's message and the AI's in the conversation
+        print('PROCESSED')                
+        self.modeManager(msg=msg)
+        self.conversationFrame.addMsg(msg)
+        self.switchPanel(self.conversationFrame)
 
 # configure the textbox to update its height when the text changes
 
@@ -565,7 +545,7 @@ class Quiz(UI):
         self.progress = 0
         self.max_score = 100
 
-        # Create Quiz Panels These are the screens that populate inside of the quizFrame
+        # Create Quiz Panels. These are the screens that populate inside of the quizFrame
         
         self.quizContainerFrame = ctk.CTkFrame(self.quizFrame_subframe, corner_radius=0, fg_color="transparent")
         self.quizContainerFrame.grid_rowconfigure(8, weight=1)
