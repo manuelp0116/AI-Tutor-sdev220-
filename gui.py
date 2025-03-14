@@ -4,8 +4,8 @@
 # Last revision date: 5/13/2023
 # The objective of this program is to tutor a user through the use of AI
 # Each time a user communicates with the AI, they can learn about a certain subject for a particular gradeLevel.
-# Additionally, the student can create a interactive quiz with for radio buttons.
-# Finally, it records the Quiz JSON to a file.
+# Additionally, the student can create a interactive quiz with four radio buttons.
+# Finally, it saves the Quiz to a JSON file.
 
 import customtkinter as ctk # Import customtkinter module using a shortened version 'ctk'
 from tkinter import messagebox # This is used to show a messagebox
