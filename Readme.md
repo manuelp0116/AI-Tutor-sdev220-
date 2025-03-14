@@ -1,18 +1,20 @@
 # BrainSpark AI-Tutor
 
-## to run it run ptyhon gui.py, add your own openai API key to AI.py, and when the gui opens it gets stuck on the quiz screen, click between chat and quiz a couple time to go to chat.
+## to run the app, type python gui.py into your integrated development environment (IDE). Next, add your own openai API key to AI.py Note: if the gui opens it gets stuck on the quiz screen, click between chat and quiz a couple time to go to chat.
+
 # how to use the app
-### first go to AI and add your own openAI api key, run in the terminal on python 3.10.9 when app open click between stedent, chat and quiz mode to access the chat window, small fix we weren't able to fix, and in quiz ask question to the ai related to the subject, AI prompt make it really picky about what it takes as valid imput
+### First, navigate to the ai.py file and copy/paste your own OpenAI API key in there. Note: it is important to have Python installed on either your local machine or cloud IDE.
+For reference, the version this app was developed with was Python 3.10.9. Nonetheless, when the app opens, click between student, chat and quiz mode to access the chat window, small fix we weren't able to fix, and in quiz ask question to the ai related to the subject, the AI prompt we used makes it really picky about what it takes as valid input
 
 ## Description 
-This app powered by openAI Api was made with the intend to help students with their learning, this app has two main modes, chat, and quiz or test me; chat will allow 
-the user to chat with an AI made and trained specifically to help answering and expanding on school related topic, the user will be able to get a more personaliazed chat
+This app powered by OpenAI API was made with the intend to help students with their learning, this app has two main modes, chat, and quiz or test me; chat will allow 
+the user to chat with an AI made and trained specifically to help answering and expanding on school related topic, the user will be able to get a more personalized chat
 selecting the grade, and subject from the dropdowns, this will make the AI an expert on the topic. The quiz function will let the user get a quiz made in the spot from the selection of grade, subject
-and the topic t hat the student wants to study for.
+and the topic that the student wants to study for.
 
 
    # AI
-   we are using openAI API for our project, this way we can se the capabilities of chatgpt3.5 turbo to answer all the questions the user has, and  thanks to this we are able to create a json file output to create personalized AI generated quizzes.
+   we are using openAI API for our project, this way we can see the capabilities of chatgpt3.5 turbo to answer all the questions the user has, and  thanks to this we are able to create a json file output to create personalized AI generated quizzes.
 
    ## `retryConnection` Decorator
 
@@ -158,7 +160,7 @@ and the topic t hat the student wants to study for.
 
    This method sets the topic for the AI tutor in learn and quiz modes. It takes one parameter:
 
-   - `topic`: The topic of discussion (e.g., "fractions", "World War I").
+   - `topic`: The topic of discussion. For example, fractions", "World War I", etc.
 
    The `addTopic` method sets the AI tutor's topic, which helps direct the AI's focus when generating responses in learn and quiz modes.
 
@@ -166,7 +168,7 @@ and the topic t hat the student wants to study for.
 
    This method sets an excerpt of text for the AI tutor to expand on, providing more context. It takes one parameter:
 
-   - `excerpt`: The excerpt of text for the AI to expand upon (e.g., a paragraph from a textbook or an article).
+   - `excerpt`: The excerpt of text for the AI to expand upon. For example, a paragraph from a textbook or an article.
 
    The `addExcerpt` method sets the AI tutor's excerpt, which is used when the AI is tasked with expanding on a piece of text to provide more context. This can help users understand parts of a textbook or article that may be cryptic or use too much technical jargon.
 
@@ -247,12 +249,12 @@ and the topic t hat the student wants to study for.
    this class deal with storage for our different files, chat and quiz, quizzes are stored in json file, and chat would be stored in a txt file. Tiem cosntrains made us not being able to use this class, and storage solutions is not in use at the moment. thefuntions on this class are:
    
    * ### housekeep: 
-      * functionn checks for directory name with os and creates directory path to save chat and 
+      * function checks for directory name with os and creates directory path to save chat and 
 
    * ### saveQuiz:
       * this function will save a json file with the quiz information for future use, user would be able to get into the quizzes into the future
    * ### readquiz: 
-      * this function reads the selected qiz file and reads the json file to be used again as a quiz. this function wasn't added to the program.
+      * this function reads the selected quiz file and reads the json file to be used again as a quiz. this function wasn't added to the program.
 
    
 
