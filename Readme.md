@@ -1,8 +1,9 @@
 # BrainSpark AI-Tutor
 
-## to run the app, type python gui.py into your integrated development environment (IDE). Next, add your own openai API key to AI.py Note: if the gui opens it gets stuck on the quiz screen, click between chat and quiz a couple time to go to chat.
+## In order to run the app, type python gui.py into your integrated development environment (IDE). 
+Next, add your own openai API key to AI.py Note: if the gui opens it gets stuck on the quiz screen, click between chat and quiz a couple time to go to chat.
 
-# how to use the app
+# How to use the app
 ### First, navigate to the ai.py file and copy/paste your own OpenAI API key in there. Note: it is important to have Python installed on either your local machine or cloud IDE.
 For reference, the version this app was developed with was Python 3.10.9. Nonetheless, when the app opens, click between student, chat and quiz mode to access the chat window, small fix we weren't able to fix, and in quiz ask question to the ai related to the subject, the AI prompt we used makes it really picky about what it takes as valid input
 
